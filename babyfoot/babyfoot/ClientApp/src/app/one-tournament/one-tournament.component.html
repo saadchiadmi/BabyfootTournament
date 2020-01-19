@@ -1,0 +1,139 @@
+<!-- <div class="card shadow-sm" (click)="displayTeams($event)">
+  <div class="card-body text-center">
+    <h5 class="card-title text-info">Display all teams</h5>
+    <p-organizationChart [value]="arbre" selectionMode="single"></p-organizationChart>
+  </div>
+</div>
+<br> -->
+<div class="card shadow-sm" *ngIf="tournament">
+  <div class="card-body">
+    <h5 class="card-title text-center text-info">Final</h5>
+    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match3)">
+      <div class="col">
+        {{arbre.match3.team1.player1.pseudo}} - {{arbre.match3.team1.player2.pseudo}}
+      </div>
+      <div class="col">
+        {{arbre.match3.scoreTeam1Player1 + arbre.match3.scoreTeam1Player2}} - 
+        {{arbre.match3.scoreTeam2Player1 + arbre.match3.scoreTeam2Player2}}
+      </div>
+      <div class="col">
+        {{arbre.match3.team2.player1.pseudo}} - {{arbre.match3.team2.player2.pseudo}}
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<div class="card shadow-sm" *ngIf="tournament">
+  <div class="card-body">
+    <h6 class="card-title text-center text-info">Semi-final</h6>
+    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match1)">
+      <div class="col">
+        {{arbre.match1.team1.player1.pseudo}} - {{arbre.match1.team1.player2.pseudo}}
+      </div>
+      <div class="col">
+        {{arbre.match1.scoreTeam1Player1 + arbre.match1.scoreTeam1Player2}} - 
+        {{arbre.match1.scoreTeam2Player1 + arbre.match1.scoreTeam2Player2}}
+      </div>
+      <div class="col">
+        {{arbre.match1.team2.player1.pseudo}} - {{arbre.match1.team2.player2.pseudo}}
+      </div>
+    </div>
+    <hr>
+    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match2)">
+      <div class="col">
+        {{arbre.match2.team1.player1.pseudo}} - {{arbre.match2.team1.player2.pseudo}}
+      </div>
+      <div class="col">
+        {{arbre.match2.scoreTeam1Player1 + arbre.match2.scoreTeam1Player2}} - 
+        {{arbre.match2.scoreTeam2Player1 + arbre.match2.scoreTeam2Player2}}
+      </div>
+      <div class="col">
+        {{arbre.match2.team2.player1.pseudo}} - {{arbre.match2.team2.player2.pseudo}}
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<div class="card shadow-sm" *ngIf="tournament">
+  <div class="card-body">
+    <h6 class="card-title text-center text-info">Groupe</h6>
+    <div class="row">
+      <div class="col-1">
+        
+      </div>
+      <div class="col">
+        Team
+      </div>
+      <div class="col text-center">
+        Point
+      </div>
+    </div>
+    <div  *ngFor="let team of sortedTeamPoule; let i = index"> 
+      <hr>
+      <div class="row">
+        <div class="col-1">
+          {{i+1}}
+        </div>
+        <div class="col">
+          {{team.player1.pseudo}} - {{team.player2.pseudo}}
+        </div>
+        <div class="col text-center">
+          {{team.point}}
+        </div>
+      </div>
+  </div>
+  </div>
+</div>
+<br>
+<div class="card shadow-sm" *ngIf="tournament">
+  <div class="card-body">
+    <h6 class="card-title text-center text-info">Match</h6>
+    <div  *ngFor="let match of sortedMatchPoule; let i = index"> 
+      <hr *ngIf="i!=0">
+      <div class="row text-center pointer" (click)="selectMatch($event, match)">
+        <div class="col">
+            {{match.team1.player1.pseudo}} - {{match.team1.player2.pseudo}}
+        </div>
+        <div class="col">
+          {{match.scoreTeam1Player1 + match.scoreTeam1Player2}} - 
+          {{match.scoreTeam2Player1 + match.scoreTeam2Player2}}
+        </div>
+        <div class="col">
+          {{match.team2.player1.pseudo}} - {{match.team2.player2.pseudo}}
+        </div>
+      </div>
+  </div>
+  </div>
+</div>
+<p-dialog header="Match" [(visible)]="displayDialog" appendTo="body" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '225px'}" (onAfterHide)="onDialogHide()">
+    <div class="ui-g-12 ui-g-nopad text-center" *ngIf="selectedMatch">
+        <div class="ui-g-6">
+          <div class="row">
+            <div class="col">{{selectedMatch.team1.player1.pseudo}}</div>
+            <div class="col">{{selectedMatch.scoreTeam1Player1}}</div>
+          </div>
+        </div>
+        <div class="ui-g-6">
+          <div class="row">
+              <div class="col">{{selectedMatch.scoreTeam2Player1}}</div>
+              <div class="col">{{selectedMatch.team2.player1.pseudo}}</div>
+          </div>
+        </div>
+        <div class="ui-g-6">
+          <div class="row">
+              <div class="col">{{selectedMatch.team1.player2.pseudo}}</div>
+              <div class="col">{{selectedMatch.scoreTeam1Player2}}</div>
+          </div>
+        </div>
+        <div class="ui-g-6">
+          <div class="row">
+              <div class="col">{{selectedMatch.scoreTeam2Player2}}</div>
+              <div class="col">{{selectedMatch.team2.player2.pseudo}}</div>
+          </div>
+          </div>
+        <div class="ui-g-12">
+          {{selectedMatch.scoreTeam1Player1 + selectedMatch.scoreTeam1Player2}} -
+          {{selectedMatch.scoreTeam2Player1 + selectedMatch.scoreTeam2Player2}}
+        </div>
+    </div>
+</p-dialog>

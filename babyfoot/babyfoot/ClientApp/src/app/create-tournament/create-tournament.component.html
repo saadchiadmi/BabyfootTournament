@@ -1,0 +1,15 @@
+<div class="card shadow" >
+    <div class="card-body text-center">
+        <h5 class="card-title text-info">Choose the players</h5>
+        <span class="ui-fluid">
+            <p-autoComplete [(ngModel)]="players" [suggestions]="filteredPlayersMultiple" (completeMethod)="filterplayerMultiple($event)" 
+                [minLength]="1" placeholder="Add a player" field="pseudo" [multiple]="true">
+            </p-autoComplete>
+        </span>
+        <ul>
+            <li *ngFor="let c of players">{{c.pseudo}}</li>
+        </ul>
+        <br>
+        <button type="button" [routerLink]="['/tournament', '1234']" [disabled]="players.length<4 || players.length%2!=0" class="btn btn-lg btn-info">Create a tournament</button>
+    </div>
+</div>

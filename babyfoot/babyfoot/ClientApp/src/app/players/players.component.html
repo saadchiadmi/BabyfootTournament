@@ -1,0 +1,64 @@
+<p-dataView #dv [value]="players" [paginator]="true" [rows]="5" paginatorPosition="both" filterBy="pseudo"
+[sortField]="sortField" [sortOrder]="sortOrder">
+    <p-header>
+        <div class="ui-helper-clearfix">
+            <div class="ui-g">
+                <div class="ui-g-12 ui-md-4">
+                    <p-dropdown [options]="sortOptions" [(ngModel)]="sortKey" placeholder="Sort By" (onChange)="onSortChange($event)" [style]="{'min-width':'140px'}"></p-dropdown>
+                </div>
+                <div class="ui-g-6 ui-md-4 filter-container">
+                    <div style="position:relative">
+                        <input type="search" pInputText placeholder="Search by pseudo" (keyup)="dv.filter($event.target.value)">
+                    </div>
+                </div>
+                <div class="ui-g-6 ui-md-4" style="text-align:right">
+                    <p-dataViewLayoutOptions></p-dataViewLayoutOptions>
+                </div>
+            </div>
+        </div>
+    </p-header>
+    <ng-template let-player pTemplate="listItem">
+        <div class="ui-g" style="padding: 2em;border-bottom: 1px solid #d9d9d9">
+            <div class="ui-g-12 ui-md-8 player-details">
+                <div class="ui-g">
+                    <div class="ui-g-2 ui-sm-6">Pseudo: </div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{player.pseudo}}</b></div>
+
+                    <div class="ui-g-2 ui-sm-6">Score: </div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{player.score}}</b></div>
+
+                    <div class="ui-g-2 ui-sm-6">Champions: </div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{player.champions}}</b></div>
+
+                    <div class="ui-g-2 ui-sm-6">Goals: </div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{player.goals}}</b></div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template let-player pTemplate="gridItem">
+        <div style="padding:.5em" class="ui-g-12 ui-md-3">
+            <p-panel [header]="player.pseudo" [style]="{'text-align':'center'}">
+                <div class="player-detail">Score : {{player.score}}</div>
+                <hr class="ui-widget-content" style="border-top:0">
+                <button pButton type="button" icon="pi pi-search" (click)="selectPlayer($event, player)" style="margin-top:0"></button>
+            </p-panel>
+        </div>
+    </ng-template>
+</p-dataView>
+
+<p-dialog header="PLayer Details" [(visible)]="displayDialog" appendTo="body" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '225px'}"  (onAfterHide)="onDialogHide()">
+    <div class="ui-g" *ngIf="selectedPlayer">
+        <div class="ui-g-4">Pseudo: </div>
+        <div class="ui-g-8">{{selectedPlayer.pseudo}}</div>
+
+        <div class="ui-g-4">Score: </div>
+        <div class="ui-g-8">{{selectedPlayer.score}}</div>
+
+        <div class="ui-g-4">Champions: </div>
+        <div class="ui-g-8">{{selectedPlayer.champions}}</div>
+
+        <div class="ui-g-4">Goals: </div>
+        <div class="ui-g-8">{{selectedPlayer.goals}}</div>
+    </div>
+</p-dialog>

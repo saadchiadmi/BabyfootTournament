@@ -1,0 +1,50 @@
+<div class="card shadow-sm" *ngIf="selectedMatch">
+  <h5 class="card-title text-center text-info">Final</h5>
+  <div class="card-body">
+    <div class="text-center">
+      <div class="row">
+        <div class="col">{{selectedMatch.team1.player1.pseudo}}</div>
+        <div class="col">{{selectedMatch.scoreTeam1Player1}}</div>
+        <div class="col">{{selectedMatch.scoreTeam2Player1}}</div>
+        <div class="col">{{selectedMatch.team2.player1.pseudo}}</div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col">
+          <button type="button" (click)="dropGoal('scoreTeam1Player1')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          &nbsp;&nbsp;&nbsp;
+          <button type="button" (click)="addGoal('scoreTeam1Player1')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+        </div>
+        <div class="col">
+          <button type="button" (click)="addGoal('scoreTeam2Player1')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          &nbsp;&nbsp;&nbsp;
+          <button type="button" (click)="dropGoal('scoreTeam2Player1')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col">{{selectedMatch.team1.player2.pseudo}}</div>
+        <div class="col">{{selectedMatch.scoreTeam1Player2}}</div>
+        <div class="col">{{selectedMatch.scoreTeam2Player2}}</div>
+        <div class="col">{{selectedMatch.team2.player2.pseudo}}</div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col">
+          <button type="button" (click)="dropGoal('scoreTeam1Player2')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          &nbsp;&nbsp;&nbsp;
+          <button type="button" (click)="addGoal('scoreTeam1Player2')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+        </div>
+        <div class="col">
+          <button type="button" (click)="addGoal('scoreTeam2Player2')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          &nbsp;&nbsp;&nbsp;
+          <button type="button" (click)="dropGoal('scoreTeam2Player2')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+        </div>
+      </div>
+      <div class="ui-g-12 font-weight-bold">
+        {{selectedMatch.scoreTeam1Player1 + selectedMatch.scoreTeam1Player2}} -
+        {{selectedMatch.scoreTeam2Player1 + selectedMatch.scoreTeam2Player2}}
+      </div>
+    </div>
+  </div>
+</div>
