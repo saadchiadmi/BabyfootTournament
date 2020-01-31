@@ -22,60 +22,45 @@ namespace babyfoot.Controllers
             this.context = context;
         }
 
-        /*
-        // GET: api/Tournaments
+        
+        // GET: api/tournaments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tournament>>> GetTournament()
         {
-            var tournaments = await context.Tournaments.ToListAsync();
+            var tournaments = await context.Tournaments.Include(t => t.Matches)
+                                                .ThenInclude(m => m.TeamsOfMatch)
+                                                    .ThenInclude(mt => mt.Team)
+                                                        .ThenInclude(t => t.PlayersOfTeam)
+                                                            .ThenInclude(tp => tp.Player)
+                                            .Include(t => t.Matches)
+                                                .ThenInclude(m => m.GoalsOfMatch)
+                        .ToListAsync();
 
             return tournaments;
         }
-        */
 
         // GET: api/tournaments/token
         [HttpGet("{token}")]
         public async Task<ActionResult<Tournament>> GetTournament(String token)
         {
-            var tournament = await context.Tournaments.FirstOrDefaultAsync(t => t.Token.Equals(token));
+            var tournament = await context.Tournaments.Where(t => t.Token.Equals(token))
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.TeamsOfMatch)
+                        .ThenInclude(mt => mt.Team)
+                            .ThenInclude(t => t.PlayersOfTeam)
+                                .ThenInclude(tp => tp.Player)
+                .Include(t => t.Matches)
+                    .ThenInclude(m => m.GoalsOfMatch)
+                    .FirstOrDefaultAsync();
 
             if (tournament == null)
             {
                 return NotFound();
             }
 
+
             return tournament;
         }
-
-        /*
-        // PUT: api/tournaments/token
-        [HttpPut("{token}")]
-        public async Task<IActionResult> PutTournament(String token, Tournament tournament)
-        {
-            if (!token.Equals(tournament.Token))
-                return BadRequest();
-
-            context.Entry(tournament).State = EntityState.Modified;
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!context.Tournaments.Any(t => t.Token == token))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-        */
 
         // POST: api/tournaments
         [HttpPost]

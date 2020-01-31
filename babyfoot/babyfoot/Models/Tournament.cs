@@ -28,7 +28,7 @@ namespace babyfoot.Models
         public TournamentState State { get; set; }
 
         [JsonProperty(Order = 5, PropertyName = "matchs")]
-        public ICollection<Match> Matches { get; set; }// = new List<Match>();
+        public ICollection<Match> Matches { get; set; }
 
         [JsonProperty(Order = 4, PropertyName = "finish")]
         public bool Finish => State == TournamentState.Ended;

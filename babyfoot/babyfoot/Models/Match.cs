@@ -9,11 +9,8 @@ namespace babyfoot.Models
 {
     public enum MatchState
     {
-        [EnumMember(Value = "poule")]
         NotStarted,
-        [EnumMember(Value = "poule")]
         InProgress,
-        [EnumMember(Value = "poule")]
         Ended
     };
     public enum MatchStage
@@ -57,10 +54,10 @@ namespace babyfoot.Models
         public Tournament Tournament { get; set; }
 
         [JsonIgnore]
-        public ICollection<MatchTeam> TeamsOfMatch { get; set; }// = new List<MatchTeam>();
+        public ICollection<MatchTeam> TeamsOfMatch { get; set; }
 
         [JsonIgnore]
-        public ICollection<PlayerGoal> GoalsOfMatch { get; set; }// = new List<PlayerGoal>();
+        public ICollection<PlayerGoal> GoalsOfMatch { get; set; }
 
         [JsonProperty(Order = 3, PropertyName = "team1")]
         public Team Team1 => TeamPair.Item1;
@@ -81,6 +78,6 @@ namespace babyfoot.Models
         public int ScoreTeam2Player2 => Team2.Player2.Goals;
 
         [JsonIgnore]
-        public (Team, Team) TeamPair => (TeamsOfMatch.ElementAt(0).Team, TeamsOfMatch.ElementAt(1).Team);
+        public (Team, Team) TeamPair { get { return (TeamsOfMatch.ElementAt(0).Team, TeamsOfMatch.ElementAt(1).Team); } }
     }
 }

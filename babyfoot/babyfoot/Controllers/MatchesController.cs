@@ -38,7 +38,13 @@ namespace babyfoot.Controllers
         [HttpGet("{token}")]
         public async Task<ActionResult<Match>> GetMatch(String token)
         {
-            var match = await context.Matches.FirstOrDefaultAsync(i => i.Token.Equals(token));
+            var match = await context.Matches
+                .Include(u => u.GoalsOfMatch)
+                .Include(u => u.TeamsOfMatch)
+                    .ThenInclude(mt => mt.Team)
+                    .ThenInclude(t => t.PlayersOfTeam)
+                    .ThenInclude(t => t.Player)
+                .FirstOrDefaultAsync();
 
             if (match == null)
             {

@@ -24,7 +24,11 @@ namespace babyfoot.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Team>>> GetTeams()
         {
-            return await context.Teams.ToListAsync();
+            var query = context.Teams.Include(t => t.PlayersOfTeam)
+                                            .ThenInclude(tp => tp.Player)
+                                            .ThenInclude(p => p.GoalsOfPlayer);
+            Console.WriteLine(query.ToString());
+            return await query.ToListAsync();
         }
 
         // GET: api/Team/5

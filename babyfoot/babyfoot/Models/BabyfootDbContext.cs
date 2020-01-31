@@ -20,6 +20,13 @@ namespace babyfoot.Models
 
         protected override void OnModelCreating(ModelBuilder model)
         {
+
+
+            model.Entity<Player>().Property(t => t.PlayerId).ValueGeneratedOnAdd();
+            model.Entity<Team>().Property(t => t.TeamId).ValueGeneratedOnAdd();
+            model.Entity<Match>().Property(t => t.MatchId).ValueGeneratedOnAdd();
+            model.Entity<Tournament>().Property(t => t.TournamentId).ValueGeneratedOnAdd();
+
             model.Entity<Player>()      .ToTable("Players");
             model.Entity<Team>()        .ToTable("Teams");
             model.Entity<Match>()       .ToTable("Matches");
@@ -30,14 +37,14 @@ namespace babyfoot.Models
             model.Entity<MatchTeam>()   .ToTable("MatchTeam");
 
 
-            model.Entity<Player>()      .HasKey(t => t.PlayerId);
-            model.Entity<Team>()        .HasKey(t => t.TeamId);
-            model.Entity<Match>()       .HasKey(t => t.MatchId);
-            model.Entity<Tournament>()  .HasKey(t => t.TournamentId);
+            model.Entity<Player>()      .HasKey(t => t.PlayerId)        .IsClustered();
+            model.Entity<Team>()        .HasKey(t => t.TeamId)          .IsClustered();
+            model.Entity<Match>()       .HasKey(t => t.MatchId)         .IsClustered();
+            model.Entity<Tournament>()  .HasKey(t => t.TournamentId)    .IsClustered();
 
-            model.Entity<PlayerTeam>()  .HasKey(t => new { t.PlayerId   , t.TeamId });
-            model.Entity<PlayerGoal>()  .HasKey(t => new { t.PlayerId   , t.MatchId });
-            model.Entity<MatchTeam>()   .HasKey(t => new { t.TeamId     , t.MatchId });
+            model.Entity<PlayerTeam>()  .HasKey(t => new { t.TeamId, t.PlayerId })   .IsClustered();
+            model.Entity<PlayerGoal>()  .HasKey(t => new { t.MatchId, t.PlayerId })  .IsClustered();
+            model.Entity<MatchTeam>()   .HasKey(t => new { t.MatchId, t.TeamId })    .IsClustered();
 
 
             model.Entity<PlayerTeam>()  .HasOne(t => t.Team)    .WithMany(t => t.PlayersOfTeam) .HasForeignKey(t => t.TeamId)   .IsRequired();
@@ -47,7 +54,22 @@ namespace babyfoot.Models
             model.Entity<MatchTeam>()   .HasOne(t => t.Team)    .WithMany(t => t.MatchesOfTeam) .HasForeignKey(t => t.TeamId)   .IsRequired();
             model.Entity<MatchTeam>()   .HasOne(t => t.Match)   .WithMany(t => t.TeamsOfMatch)  .HasForeignKey(t => t.MatchId)  .IsRequired();
 
-            model.Entity<Match>()       .HasOne(t => t.Tournament).WithMany(t => t.Matches)     .HasForeignKey(t => t.MatchId).IsRequired();
+            model.Entity<Match>()       .HasOne(t => t.Tournament).WithMany(t => t.Matches)     .HasForeignKey(t => t.TournamentId).IsRequired();
+
+            model.Entity<Team>().Ignore(t => t.Player1);
+            model.Entity<Team>().Ignore(t => t.Player2);
+            model.Entity<Team>().Ignore(t => t.PlayerPair);
+
+            model.Entity<Match>().Ignore(t => t.Team1);
+            model.Entity<Match>().Ignore(t => t.Team2);
+            model.Entity<Match>().Ignore(t => t.TeamPair);
+            model.Entity<Match>().Ignore(t => t.ScoreTeam1Player1);
+            model.Entity<Match>().Ignore(t => t.ScoreTeam1Player2);
+            model.Entity<Match>().Ignore(t => t.ScoreTeam2Player1);
+            model.Entity<Match>().Ignore(t => t.ScoreTeam2Player2);
+
+            model.Entity<Tournament>().Ignore(t => t.Teams);
+            model.Entity<Tournament>().Ignore(t => t.Finish);
 
 
             //model.Entity<Player>()      .Ignore(t => t.GoalsOfPlayer);
@@ -60,12 +82,6 @@ namespace babyfoot.Models
 
             //model.Entity<PlayerTeam>()  .Ignore(t => t.Player);
             //model.Entity<PlayerTeam>()  .Ignore(t => t.Team);
-
-
-            model.Entity<Player>().Property(t => t.PlayerId).ValueGeneratedOnAdd();
-            model.Entity<Team>().Property(t => t.TeamId).ValueGeneratedOnAdd();
-            model.Entity<Match>().Property(t => t.MatchId).ValueGeneratedOnAdd();
-            model.Entity<Tournament>().Property(t => t.TournamentId).ValueGeneratedOnAdd();
 
             //model.Entity<PlayerTeam>().Property(t => new { t.PlayerId, t.TeamId }).ValueGeneratedOnAdd();
             //model.Entity<PlayerGoal>().Property(t => new { t.PlayerId, t.MatchId }).ValueGeneratedOnAdd();
