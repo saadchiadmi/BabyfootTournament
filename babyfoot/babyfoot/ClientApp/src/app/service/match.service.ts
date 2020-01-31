@@ -18,7 +18,7 @@ export class MatchService {
     player4: Player = { pseudo: "thomas1", score: 10, goals: 10, champions: 1 };
     team1: Team = { player1: this.player1, player2: this.player2, point: 7 };
     team2: Team = { player1: this.player3, player2: this.player4, point: 5 };
-    match1: BehaviorSubject<Match> = new BehaviorSubject( { id: 2, ordre: 1, team1: this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2: 0, start: new Date(2019, 10, 21), token: null, niveau: null, winner: null });
+    match1: BehaviorSubject<Match> = new BehaviorSubject( { id: 2, ordre: 1, team1: this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2: 0, finish: true, token: null, niveau: null, winner: null });
 
     getMatchById(id: string): Observable<Match> {
         return this.match1.asObservable();

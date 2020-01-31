@@ -6,8 +6,8 @@ import { Team } from './Team';
 
 export interface Tournament {
 
-    id: string;
-    date: Date;
+    token: string;
+    //date: Date;
     finish: boolean;
     poule: Poule;
     arbre: Arbre;

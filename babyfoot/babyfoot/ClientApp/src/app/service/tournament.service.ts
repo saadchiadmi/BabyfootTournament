@@ -46,21 +46,21 @@ export class TournamentService {
     team3 : Team = {player1 : this.players[4], player2 : this.players[5], point : 3};
     team4 : Team = {player1 : this.players[6], player2 : this.players[7], point : 2};
     team5: Team = { player1: this.players[8], player2: this.players[9], point: 1 };
-    match1: Match = { ordre: 1, team1: this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2: 0, start: new Date(2019, 10, 21) };
-    match2 : Match = {ordre : 2, team1 : this.team5, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    match3 : Match = {ordre : 3, team1 : this.team2, team2: this.team4, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    match4 : Match = {ordre : 4, team1 : this.team1, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    match5 : Match = {ordre : 5, team1 : this.team2, team2: this.team5, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
+    match1: Match = { token: 'match1', ordre: 1, team1: this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2: 0, finish: true };
+    match2 : Match = {token: 'match2', ordre : 2, team1 : this.team5, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    match3 : Match = {token: 'match3', ordre : 3, team1 : this.team2, team2: this.team4, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    match4 : Match = {token: 'match4', ordre : 4, team1 : this.team1, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    match5 : Match = {token: 'match5', ordre : 5, team1 : this.team2, team2: this.team5, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
     poule : Poule = {teams : [this.team1, this.team2, this.team3, this.team4, this.team5],
                     matchs : [this.match1, this.match2, this.match3, this.match4, this.match5]
     };
 
-    match6 : Match = {ordre : 0, team1 : this.team1, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    match7 : Match = {ordre : 0, team1 : this.team2, team2: this.team4, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    match8 : Match = {ordre : 0, team1 : this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, start: new Date(2019, 10, 21)};
-    arbre : Arbre = {match1 : this.match6, match2 : this.match7, match3 : this.match8, team : this.team1};
+    match6 : Match = {token: 'match6', ordre : 0, team1 : this.team1, team2: this.team3, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    match7 : Match = {token: 'match7', ordre : 0, team1 : this.team2, team2: this.team4, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    match8 : Match = {token: 'match8', ordre : 0, team1 : this.team1, team2: this.team2, scoreTeam1Player1: 2, scoreTeam1Player2: 3, scoreTeam2Player1: 2, scoreTeam2Player2:0, finish: true};
+    arbre : Arbre = {match1 : this.match6, match2 : this.match7, match3 : this.match8};
 
     tounament : BehaviorSubject<Tournament[]> = new BehaviorSubject([
-    {id : "saad1234", date : new Date(2019, 10, 21), finish : true, poule : this.poule, arbre : this.arbre}
+    {token : "saad1234", /*date : new Date(2019, 10, 21),*/ finish : true, poule : this.poule, arbre : this.arbre}
     ]);
 }

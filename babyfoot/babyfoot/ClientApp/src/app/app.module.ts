@@ -24,6 +24,10 @@ import { OneTournamentComponent } from './one-tournament/one-tournament.componen
 import { HttpClientModule } from '@angular/common/http';
 import {OrganizationChartModule} from 'primeng/organizationchart';
 import { MatchComponent } from './match/match.component';
+import {ConfirmDialogModule} from 'primeng/confirmdialog';
+import { CountdownModule } from 'ngx-countdown';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -38,6 +42,8 @@ import { MatchComponent } from './match/match.component';
   ],
   imports: [
     ButtonModule,
+    CountdownModule,
+    ConfirmDialogModule,
     InputTextModule,
     OrganizationChartModule,
     HttpClientModule,
@@ -57,7 +63,8 @@ import { MatchComponent } from './match/match.component';
     MatButtonModule,
     MatSidenavModule,
     MatIconModule,
-    MatListModule
+    MatListModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [],
   bootstrap: [AppComponent]

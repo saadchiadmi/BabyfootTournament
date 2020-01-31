@@ -5,16 +5,19 @@
   </div>
 </div>
 <br> -->
-<div class="card shadow-sm" *ngIf="tournament">
+<div class="card shadow-sm" *ngIf="checkFinishSemiFinal">
   <div class="card-body">
     <h5 class="card-title text-center text-info">Final</h5>
     <div class="row text-center pointer" (click)="selectMatch($event, arbre.match3)">
       <div class="col">
         {{arbre.match3.team1.player1.pseudo}} - {{arbre.match3.team1.player2.pseudo}}
       </div>
-      <div class="col">
+      <div class="col" *ngIf="arbre.match3.finish">
         {{arbre.match3.scoreTeam1Player1 + arbre.match3.scoreTeam1Player2}} - 
         {{arbre.match3.scoreTeam2Player1 + arbre.match3.scoreTeam2Player2}}
+      </div>
+      <div class="col" *ngIf="!arbre.match3.finish">
+        -
       </div>
       <div class="col">
         {{arbre.match3.team2.player1.pseudo}} - {{arbre.match3.team2.player2.pseudo}}
@@ -23,16 +26,19 @@
   </div>
 </div>
 <br>
-<div class="card shadow-sm" *ngIf="tournament">
+<div class="card shadow-sm" *ngIf="checkFinishPoule">
   <div class="card-body">
     <h6 class="card-title text-center text-info">Semi-final</h6>
     <div class="row text-center pointer" (click)="selectMatch($event, arbre.match1)">
       <div class="col">
         {{arbre.match1.team1.player1.pseudo}} - {{arbre.match1.team1.player2.pseudo}}
       </div>
-      <div class="col">
+      <div class="col" *ngIf="arbre.match1.finish">
         {{arbre.match1.scoreTeam1Player1 + arbre.match1.scoreTeam1Player2}} - 
         {{arbre.match1.scoreTeam2Player1 + arbre.match1.scoreTeam2Player2}}
+      </div>
+      <div class="col" *ngIf="!arbre.match1.finish">
+        -
       </div>
       <div class="col">
         {{arbre.match1.team2.player1.pseudo}} - {{arbre.match1.team2.player2.pseudo}}
@@ -43,9 +49,12 @@
       <div class="col">
         {{arbre.match2.team1.player1.pseudo}} - {{arbre.match2.team1.player2.pseudo}}
       </div>
-      <div class="col">
+      <div class="col" *ngIf="arbre.match2.finish">
         {{arbre.match2.scoreTeam1Player1 + arbre.match2.scoreTeam1Player2}} - 
         {{arbre.match2.scoreTeam2Player1 + arbre.match2.scoreTeam2Player2}}
+      </div>
+      <div class="col" *ngIf="!arbre.match2.finish">
+        -
       </div>
       <div class="col">
         {{arbre.match2.team2.player1.pseudo}} - {{arbre.match2.team2.player2.pseudo}}
@@ -94,9 +103,12 @@
         <div class="col">
             {{match.team1.player1.pseudo}} - {{match.team1.player2.pseudo}}
         </div>
-        <div class="col">
+        <div class="col" *ngIf="match.finish">
           {{match.scoreTeam1Player1 + match.scoreTeam1Player2}} - 
           {{match.scoreTeam2Player1 + match.scoreTeam2Player2}}
+        </div>
+        <div class="col" *ngIf="!match.finish">
+          -
         </div>
         <div class="col">
           {{match.team2.player1.pseudo}} - {{match.team2.player2.pseudo}}
@@ -137,3 +149,4 @@
         </div>
     </div>
 </p-dialog>
+<p-confirmDialog appendTo="body" [style]="{width: '50vw'}"></p-confirmDialog>
