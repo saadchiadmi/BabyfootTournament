@@ -7,113 +7,43 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using babyfoot.Models;
 
+
 namespace babyfoot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class PlayersController : ControllerBase
     {
-        private readonly ConnectionDBClass _context;
+        private readonly BabyfootDbContext context;
 
-        public PlayersController(ConnectionDBClass context)
+        public PlayersController(BabyfootDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Players
+        // GET: api/players
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Players>>> GetPlayers()
+        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers()
         {
-            return await _context.Players.Include(t => t.MatchGoals)
-                                        .Include(t => t.TeamPlayers)
-                                            .ThenInclude(tp=>tp.Team)
-                                            .ThenInclude(t => t.MatchTeams)
-                                            .ThenInclude(t => t.Match)
-                                        .ToListAsync();
-        }
-
-        // GET: api/Players/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Players>> GetPlayers(int id)
-        {
-            var players = await _context.Players.Include(t => t.MatchGoals)
-                                        .Include(t => t.TeamPlayers)
-                                            .ThenInclude(tp => tp.Team)
-                                            .ThenInclude(t => t.MatchTeams)
-                                            .ThenInclude(t => t.Match)
-                                    .FirstOrDefaultAsync(i => i.ID == id);
-
-            if (players == null)
-            {
-                return NotFound();
-            }
+            var players = await context.Players.ToListAsync();
 
             return players;
         }
 
-        // PUT: api/Players/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPlayers(int id, Players players)
-        {
-            if (id != players.ID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(players).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PlayersExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Players
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
+        // POST: api/players
         [HttpPost]
-        public async Task<ActionResult<Players>> PostPlayers(Players players)
+        public async Task<ActionResult<Player>> PostPlayers(Player player)
         {
-            _context.Players.Add(players);
-            await _context.SaveChangesAsync();
+            if (context.Players.Any(t => t.Pseudo == player.Pseudo))
+                return base.BadRequest();
 
-            return CreatedAtAction("GetPlayers", new { id = players.ID }, players);
+            context.Players.Add(player);
+            await context.SaveChangesAsync();
+
+            var task = CreatedAtAction("GetPlayers", new { id = player.PlayerId }, player);
+
+            return task;
         }
 
-        // DELETE: api/Players/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Players>> DeletePlayers(int id)
-        {
-            var players = await _context.Players.FindAsync(id);
-            if (players == null)
-            {
-                return NotFound();
-            }
-
-            _context.Players.Remove(players);
-            await _context.SaveChangesAsync();
-
-            return players;
-        }
-
-        private bool PlayersExists(int id)
-        {
-            return _context.Players.Any(e => e.ID == id);
-        }
     }
 }

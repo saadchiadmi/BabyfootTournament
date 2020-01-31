@@ -15,39 +15,29 @@ namespace babyfoot.Controllers
     [ApiController]
     public class TournamentsController : ControllerBase
     {
-        private readonly ConnectionDBClass _context;
+        private readonly BabyfootDbContext context;
 
-        public TournamentsController(ConnectionDBClass context)
+        public TournamentsController(BabyfootDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
+        /*
         // GET: api/Tournaments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tournament>>> GetTournament()
         {
-            return await _context.Tournament.Include(t => t.Matches)
-                                                .ThenInclude(m => m.MatchTeams)
-                                                    .ThenInclude(mt => mt.Team)
-                                                        .ThenInclude(t => t.TeamPlayers)
-                                                            .ThenInclude(tp => tp.Player)
-                                            .Include(t => t.Matches)
-                                                .ThenInclude(m => m.MatchGoals)
-                        .ToListAsync();
-        }
+            var tournaments = await context.Tournaments.ToListAsync();
 
-        // GET: api/Tournaments/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Tournament>> GetTournament(int id)
+            return tournaments;
+        }
+        */
+
+        // GET: api/tournaments/token
+        [HttpGet("{token}")]
+        public async Task<ActionResult<Tournament>> GetTournament(String token)
         {
-            var tournament = await _context.Tournament.Include(t => t.Matches)
-                                                .ThenInclude(m => m.MatchTeams)
-                                                    .ThenInclude(mt => mt.Team)
-                                                        .ThenInclude(t => t.TeamPlayers)
-                                                            .ThenInclude(tp => tp.Player)
-                                                .Include(t => t.Matches)
-                                                .ThenInclude(m => m.MatchGoals)
-                                    .FirstOrDefaultAsync(i => i.ID == id);
+            var tournament = await context.Tournaments.FirstOrDefaultAsync(t => t.Token.Equals(token));
 
             if (tournament == null)
             {
@@ -57,26 +47,23 @@ namespace babyfoot.Controllers
             return tournament;
         }
 
-        // PUT: api/Tournaments/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTournament(int id, Tournament tournament)
+        /*
+        // PUT: api/tournaments/token
+        [HttpPut("{token}")]
+        public async Task<IActionResult> PutTournament(String token, Tournament tournament)
         {
-            if (id != tournament.ID)
-            {
+            if (!token.Equals(tournament.Token))
                 return BadRequest();
-            }
 
-            _context.Entry(tournament).State = EntityState.Modified;
+            context.Entry(tournament).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!TournamentExists(id))
+                if (!context.Tournaments.Any(t => t.Token == token))
                 {
                     return NotFound();
                 }
@@ -88,36 +75,14 @@ namespace babyfoot.Controllers
 
             return NoContent();
         }
+        */
 
-        // POST: api/Tournaments
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
+        // POST: api/tournaments
         [HttpPost]
         public void PostTournament([FromBody] Tournament tournament)
         {
-            _context.Tournament.Add(tournament);
-            _context.SaveChanges();
-        }
-
-        // DELETE: api/Tournaments/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Tournament>> DeleteTournament(int id)
-        {
-            var tournament = await _context.Tournament.FindAsync(id);
-            if (tournament == null)
-            {
-                return NotFound();
-            }
-
-            _context.Tournament.Remove(tournament);
-            await _context.SaveChangesAsync();
-
-            return tournament;
-        }
-
-        private bool TournamentExists(int id)
-        {
-            return _context.Tournament.Any(e => e.ID == id);
+            context.Tournaments.Add(tournament);
+            context.SaveChanges();
         }
     }
 }

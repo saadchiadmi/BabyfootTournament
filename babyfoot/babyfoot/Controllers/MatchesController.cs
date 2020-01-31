@@ -13,35 +13,32 @@ namespace babyfoot.Controllers
     [ApiController]
     public class MatchesController : ControllerBase
     {
-        private readonly ConnectionDBClass _context;
+        private readonly BabyfootDbContext context;
 
-        public MatchesController(ConnectionDBClass context)
+        public MatchesController(BabyfootDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Matches
+        /*
+        // GET: api/matches
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Match>>> GetMatch()
         {
-            return await _context.Match.Include(u => u.MatchGoals)
-                                        .Include(u => u.MatchTeams)
-                                            .ThenInclude(mt=>mt.Team)
-                                            .ThenInclude(t => t.TeamPlayers)
+            return await context.Matches.Include(u => u.GoalsOfMatch)
+                                        .Include(u => u.TeamsOfMatch)
+                                            .ThenInclude(mt => mt.Team)
+                                            .ThenInclude(t => t.PlayersOfTeam)
                                             .ThenInclude(t => t.Player)
                 .ToListAsync();
         }
+        */
 
-        // GET: api/Matches/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Match>> GetMatch(int id)
+        // GET: api/matches/token
+        [HttpGet("{token}")]
+        public async Task<ActionResult<Match>> GetMatch(String token)
         {
-            var match = await _context.Match.Include(u => u.MatchGoals)
-                                        .Include(u => u.MatchTeams)
-                                            .ThenInclude(mt => mt.Team)
-                                            .ThenInclude(t => t.TeamPlayers)
-                                            .ThenInclude(t => t.Player)
-                                    .FirstOrDefaultAsync(i => i.ID == id);
+            var match = await context.Matches.FirstOrDefaultAsync(i => i.Token.Equals(token));
 
             if (match == null)
             {
@@ -54,23 +51,21 @@ namespace babyfoot.Controllers
         // PUT: api/Matches/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMatch(int id, Match match)
+        [HttpPut("{token}")]
+        public async Task<IActionResult> PutMatch(String token, Match match)
         {
-            if (id != match.ID)
-            {
+            if (!token.Equals(match.Token))
                 return BadRequest();
-            }
 
-            _context.Entry(match).State = EntityState.Modified;
+            context.Entry(match).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MatchExists(id))
+                if (!context.Matches.Any(e => e.Token.Equals(token)))
                 {
                     return NotFound();
                 }
@@ -84,36 +79,14 @@ namespace babyfoot.Controllers
         }
 
         // POST: api/Matches
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPost]
         public async Task<ActionResult<Match>> PostMatch(Match match)
         {
-            _context.Match.Add(match);
-            await _context.SaveChangesAsync();
+            context.Matches.Add(match);
+            await context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMatch", new { id = match.ID }, match);
+            return CreatedAtAction("GetMatch", match.Token, match);
         }
 
-        // DELETE: api/Matches/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Match>> DeleteMatch(int id)
-        {
-            var match = await _context.Match.FindAsync(id);
-            if (match == null)
-            {
-                return NotFound();
-            }
-
-            _context.Match.Remove(match);
-            await _context.SaveChangesAsync();
-
-            return match;
-        }
-
-        private bool MatchExists(int id)
-        {
-            return _context.Match.Any(e => e.ID == id);
-        }
     }
 }
