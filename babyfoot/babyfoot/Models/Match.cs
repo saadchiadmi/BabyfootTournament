@@ -1,57 +1,86 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace babyfoot.Models
 {
+    public enum MatchState
+    {
+        [EnumMember(Value = "poule")]
+        NotStarted,
+        [EnumMember(Value = "poule")]
+        InProgress,
+        [EnumMember(Value = "poule")]
+        Ended
+    };
+    public enum MatchStage
+    {
+        [EnumMember(Value = "poule")]
+        Pool,
+        [EnumMember(Value = "semifinal")]
+        Semifinal,
+        [EnumMember(Value = "final")]
+        Final
+    };
+
     public class Match
     {
-        [Key]
-        public int ID { get; set; }
-        [Required]
-        public int TournamentID { get; set; }
-        public string token { get; set; }
-        public string start { get; set; }
-        public Boolean finish { get { return true; } }
-        public string time { get; set; }
-        public int ordre { get; set; }
-        public string niveau { get; set; }
-        public Teams team1{get {return MatchTeams.Count() == 0 ? null : MatchTeams.ElementAt(0).Team;} }
-        public Teams team2{get {return MatchTeams.Count() == 0 ? null : MatchTeams.ElementAt(1).Team; } }
-        public Teams winner { get {
-                return finish? (scoreTeam1Player1 + scoreTeam1Player2) > (scoreTeam2Player1 + scoreTeam2Player2) ? team1 : team2 : null;
-            } }
-        public int scoreTeam1Player1 { get {
-                if (team1 == null) return 0;
-                IEnumerable<MatchGoals> listGoals = MatchGoals.Where(m => m.PlayerID == team1.TeamPlayers.ElementAt(0).PlayerID);
-                return listGoals.Count()==0 ? 0 : listGoals.ElementAt(0).goals;
-            } }
-        public int scoreTeam1Player2 { get {
-                if (team1 == null) return 0;
-                IEnumerable<MatchGoals> listGoals = MatchGoals.Where(m => m.PlayerID == team1.TeamPlayers.ElementAt(1).PlayerID);
-                return listGoals.Count() == 0 ? 0 : listGoals.ElementAt(0).goals;
-            } }
-        public int scoreTeam2Player1 { get {
-                if (team2 == null) return 0;
-                IEnumerable<MatchGoals> listGoals = MatchGoals.Where(m => m.PlayerID == team2.TeamPlayers.ElementAt(0).PlayerID);
-                return listGoals.Count() == 0 ? 0 : listGoals.ElementAt(0).goals;
-            } }
-        public int scoreTeam2Player2 { get {
-                if (team2 == null) return 0;
-                IEnumerable<MatchGoals> listGoals = MatchGoals.Where(m => m.PlayerID == team2.TeamPlayers.ElementAt(1).PlayerID);
-                return listGoals.Count() == 0 ? 0 : listGoals.ElementAt(0).goals;
-            } }
+
+        [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
+
+        [JsonProperty(Order = 1, PropertyName = "id")]
+        public int MatchId { get; set; }
 
         [JsonIgnore]
-        public virtual Tournament Tournament { get; set; } = new Tournament();
+        public int TournamentId { get; set; }
+
+        [JsonProperty(Order = 2, PropertyName = "token")]
+        public String Token { get; set; }
+
+        [JsonProperty(Order = 5, PropertyName = "ordre")]
+        public int Order { get; set; }
+
+
+        [JsonProperty(Order = 6, PropertyName = "niveau")]
+        public MatchStage Stage { get; set; }
+
         [JsonIgnore]
-        public virtual ICollection<MatchGoals> MatchGoals { get; set; } = new List<MatchGoals>();
+        public MatchState State { get; set; }
+
+        [JsonProperty(Order = 5, PropertyName = "start")]
+        public System.DateTime StartDate { get; set; }
+
         [JsonIgnore]
-        public virtual ICollection<MatchTeams> MatchTeams { get; set; } = new List<MatchTeams>();
+        public Tournament Tournament { get; set; }
+
+        [JsonIgnore]
+        public ICollection<MatchTeam> TeamsOfMatch { get; set; }// = new List<MatchTeam>();
+
+        [JsonIgnore]
+        public ICollection<PlayerGoal> GoalsOfMatch { get; set; }// = new List<PlayerGoal>();
+
+        [JsonProperty(Order = 3, PropertyName = "team1")]
+        public Team Team1 => TeamPair.Item1;
+
+        [JsonProperty(Order = 4, PropertyName = "team2")]
+        public Team Team2 => TeamPair.Item2;
+
+        [JsonProperty(Order = 7, PropertyName = "scoreTeam1Player1")]
+        public int ScoreTeam1Player1 => Team1.Player1.Goals;
+
+        [JsonProperty(Order = 8, PropertyName = "scoreTeam1Player2")]
+        public int ScoreTeam1Player2 => Team1.Player2.Goals;
+
+        [JsonProperty(Order = 9, PropertyName = "scoreTeam2Player1")]
+        public int ScoreTeam2Player1 => Team2.Player1.Goals;
+
+        [JsonProperty(Order = 10, PropertyName = "scoreTeam2Player2")]
+        public int ScoreTeam2Player2 => Team2.Player2.Goals;
+
+        [JsonIgnore]
+        public (Team, Team) TeamPair => (TeamsOfMatch.ElementAt(0).Team, TeamsOfMatch.ElementAt(1).Team);
     }
 }
