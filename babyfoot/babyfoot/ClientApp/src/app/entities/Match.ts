@@ -2,11 +2,12 @@ import { Team } from './Team';
 
 export interface Match {
 
-    //id: number;
+    token: string;
     //token: string;
-    start : Date;
+    //start : Date;
     team1: Team;
     team2: Team;
+    finish: boolean;
     //winner: Team;
     //niveau: string;
     ordre : number;

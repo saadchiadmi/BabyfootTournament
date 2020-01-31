@@ -17,6 +17,10 @@ export class PlayerService {
     {pseudo : "thomas1", score : 10, goals : 10, champions : 1},
     {pseudo : "stbe", score : 30, goals : 20, champions : 2},
     {pseudo : "stbe1", score : 37, goals : 27, champions : 2},
+    {pseudo : "str", score : 38, goals : 27, champions : 2},
+    {pseudo : "str1", score : 27, goals : 27, champions : 2},
+    {pseudo : "pistl", score : 29, goals : 27, champions : 2},
+    {pseudo : "pislt", score : 39, goals : 27, champions : 2},
   ]) ;
 
     getPlayers(): Observable<Player[]> {

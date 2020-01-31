@@ -10,6 +10,6 @@
             <li *ngFor="let c of players">{{c.pseudo}}</li>
         </ul>
         <br>
-        <button type="button" [routerLink]="['/tournament', '1234']" [disabled]="players.length<4 || players.length%2!=0" class="btn btn-lg btn-info">Create a tournament</button>
+        <button type="button" (click)="createTournament()" [disabled]="players.length<6|| players.length%2!=0" class="btn btn-lg btn-info">Create a tournament</button>
     </div>
 </div>

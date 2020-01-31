@@ -6,9 +6,12 @@
                 <div class="ui-g-12 ui-md-4">
                     <p-dropdown [options]="sortOptions" [(ngModel)]="sortKey" placeholder="Sort By" (onChange)="onSortChange($event)" [style]="{'min-width':'140px'}"></p-dropdown>
                 </div>
-                <div class="ui-g-6 ui-md-4 filter-container">
-                    <div style="position:relative">
-                        <input type="search" pInputText placeholder="Search by pseudo" (keyup)="dv.filter($event.target.value)">
+                <div class="ui-g-6 ui-md-4 filter-container ">
+                    <div class="" style="position:relative">
+                        <input type="search" pInputText placeholder="Search by pseudo" (input)="search($event.target.value)">
+                    </div>
+                    <div class="ui-g-6 ui-md-4" style="position:relative" *ngIf="players.length==0">
+                            <button type="button" (click)="addPlayer()" class="btn btn-info">Add</button>
                     </div>
                 </div>
                 <div class="ui-g-6 ui-md-4" style="text-align:right">
