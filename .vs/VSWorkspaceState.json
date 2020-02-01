@@ -3,8 +3,10 @@
     "",
     "\\babyfoot",
     "\\babyfoot\\babyfoot",
+    "\\babyfoot\\babyfoot\\ClientApp",
+    "\\babyfoot\\babyfoot\\ClientApp\\src\\app",
     "\\babyfoot\\babyfoot\\Models"
   ],
-  "SelectedNode": "\\babyfoot\\babyfoot\\Controllers",
+  "SelectedNode": "\\babyfoot\\babyfoot.sln",
   "PreviewInSolutionExplorer": false
 }
