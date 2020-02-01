@@ -27,13 +27,14 @@ namespace babyfoot.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Tournament>>> GetTournament()
         {
-            var tournaments = await context.Tournaments.Include(t => t.Matches)
-                                                .ThenInclude(m => m.TeamsOfMatch)
-                                                    .ThenInclude(mt => mt.Team)
-                                                        .ThenInclude(t => t.PlayersOfTeam)
-                                                            .ThenInclude(tp => tp.Player)
-                                            .Include(t => t.Matches)
-                                                .ThenInclude(m => m.GoalsOfMatch)
+            var tournaments = await context.Tournaments
+                .Include(t => t.Matches)
+                    .ThenInclude(t => t.TeamsOfMatch)
+                        .ThenInclude(t => t.Team)
+                            .ThenInclude(t => t.PlayersOfTeam)
+                                .ThenInclude(t => t.Player)
+                .Include(t => t.Matches)
+                    .ThenInclude(t => t.GoalsOfMatch)
                         .ToListAsync();
 
             return tournaments;
@@ -45,13 +46,13 @@ namespace babyfoot.Controllers
         {
             var tournament = await context.Tournaments.Where(t => t.Token.Equals(token))
                 .Include(t => t.Matches)
-                    .ThenInclude(m => m.TeamsOfMatch)
-                        .ThenInclude(mt => mt.Team)
+                    .ThenInclude(t => t.TeamsOfMatch)
+                        .ThenInclude(t => t.Team)
                             .ThenInclude(t => t.PlayersOfTeam)
-                                .ThenInclude(tp => tp.Player)
+                                .ThenInclude(t => t.Player)
                 .Include(t => t.Matches)
-                    .ThenInclude(m => m.GoalsOfMatch)
-                    .FirstOrDefaultAsync();
+                    .ThenInclude(t => t.GoalsOfMatch)
+                        .FirstOrDefaultAsync();
 
             if (tournament == null)
             {
