@@ -8,8 +8,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class PlayerService {
 
-  URI: string = "https://localhost:44324/";
-
     constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) { }
 
   players : BehaviorSubject<Player[]> = new BehaviorSubject([
@@ -25,13 +23,8 @@ export class PlayerService {
     {pseudo : "pislt", score : 39, goals : 27, champions : 2},
   ]) ;
 
-  getPlayers(): Observable<Player[]> {
-    return this.http.get<Player[]>(this.URI + "api/players");
-      //return this.players
-  }
-
-  savePlayer(player: Player): Observable<Player> {
-    return this.http.post<Player>(this.URI + "api/players", player);
-    //return this.players
-  }
+    getPlayers(): Observable<Player[]> {
+        //return this.http.get<Player[]>(this.baseUrl + "api/players");
+        return this.players
+    }
 }

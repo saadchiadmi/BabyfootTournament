@@ -12,9 +12,9 @@ import { PlayerService } from '../service/player.service';
 export class PlayersComponent implements OnInit {
 
   players: Player[];
+  allPlayers: Player[];
   selectedPlayer: Player;
   displayDialog: boolean;
-  pseudo: string ="";
   sortOptions: SelectItem[];
   sortKey: string;
   sortField: string;
@@ -24,6 +24,7 @@ export class PlayersComponent implements OnInit {
 
   ngOnInit() {
       this.playerservice.getPlayers().subscribe(players => this.players = players);
+      this.playerservice.getPlayers().subscribe(players => this.allPlayers = players);
 
       this.sortOptions = [
           {label: 'Champions', value: '!champions'},
@@ -55,17 +56,11 @@ export class PlayersComponent implements OnInit {
     this.selectedPlayer = null;
   }
 
-  search(pseudo) {
-    //this.pseudo = pseudo;
-    this.playerservice.getPlayers().subscribe(players => this.players = players.filter(p => p.pseudo.match(pseudo)));
+  search(pseudo){
+    this.players = this.allPlayers.filter(p => p.pseudo.match(pseudo));
   }
 
-  addPlayer() {
-    this.playerservice.savePlayer({ pseudo: this.pseudo, champions: 0, goals: 0, score: 0 })
-      .subscribe(res => {
-        this.pseudo = "";
-        this.search(this.pseudo);
-      });
+  addPlayer(){
     
   }
 }
