@@ -1,6 +1,6 @@
 <div class="card shadow" >
     <div class="card-body text-center">
-        <h5 class="card-title text-info">Choose the players</h5>
+        <h5 class="card-title text-view">Choose the players</h5>
         <span class="ui-fluid">
             <p-autoComplete [(ngModel)]="players" [suggestions]="filteredPlayersMultiple" (completeMethod)="filterplayerMultiple($event)" 
                 [minLength]="1" placeholder="Add a player" field="pseudo" [multiple]="true">
@@ -10,6 +10,6 @@
             <li *ngFor="let c of players">{{c.pseudo}}</li>
         </ul>
         <br>
-        <button type="button" (click)="createTournament()" [disabled]="players.length<6|| players.length%2!=0" class="btn btn-lg btn-info">Create a tournament</button>
+        <button type="button" (click)="createTournament()" [disabled]="players.length<6|| players.length%2!=0" class="btn btn-lg btn-view">Create a tournament</button>
     </div>
 </div>

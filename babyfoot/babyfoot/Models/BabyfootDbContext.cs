@@ -36,7 +36,6 @@ namespace babyfoot.Models
             model.Entity<PlayerTeam>()  .ToTable("PlayerTeam");
             model.Entity<MatchTeam>()   .ToTable("MatchTeam");
 
-
             model.Entity<Player>()      .HasKey(t => t.PlayerId)        .IsClustered();
             model.Entity<Team>()        .HasKey(t => t.TeamId)          .IsClustered();
             model.Entity<Match>()       .HasKey(t => t.MatchId)         .IsClustered();
@@ -56,20 +55,17 @@ namespace babyfoot.Models
 
             model.Entity<Match>()       .HasOne(t => t.Tournament).WithMany(t => t.Matches)     .HasForeignKey(t => t.TournamentId).IsRequired();
 
-            model.Entity<Team>().Ignore(t => t.Player1);
-            model.Entity<Team>().Ignore(t => t.Player2);
-            model.Entity<Team>().Ignore(t => t.PlayerPair);
+            //model.Entity<Team>().Ignore(t => t.Player1);
+            //model.Entity<Team>().Ignore(t => t.Player2);
+            //model.Entity<Team>().Ignore(t => t.Players);
 
-            model.Entity<Match>().Ignore(t => t.Team1);
-            model.Entity<Match>().Ignore(t => t.Team2);
-            model.Entity<Match>().Ignore(t => t.TeamPair);
-            model.Entity<Match>().Ignore(t => t.ScoreTeam1Player1);
-            model.Entity<Match>().Ignore(t => t.ScoreTeam1Player2);
-            model.Entity<Match>().Ignore(t => t.ScoreTeam2Player1);
-            model.Entity<Match>().Ignore(t => t.ScoreTeam2Player2);
+            //model.Entity<Match>().Ignore(t => t.Team1);
+            //model.Entity<Match>().Ignore(t => t.Team2);
+            //model.Entity<Match>().Ignore(t => t.Teams);
+            //model.Entity<Match>().Ignore(t => t.Goals);
 
-            model.Entity<Tournament>().Ignore(t => t.Teams);
-            model.Entity<Tournament>().Ignore(t => t.Finish);
+            //model.Entity<Tournament>().Ignore(t => t.Teams);
+            //model.Entity<Tournament>().Ignore(t => t.Finish);
 
 
             //model.Entity<Player>()      .Ignore(t => t.GoalsOfPlayer);

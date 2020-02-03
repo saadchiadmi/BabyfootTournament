@@ -1,7 +1,7 @@
 <div class="card shadow-sm" *ngIf="selectedMatch"> 
 <br>
-  <h5 class="card-title text-center text-info" *ngIf="checkIfFinishPoule()">FINAL</h5>
-  <h5 class="card-title text-center text-info" *ngIf="!checkIfFinishPoule()"><countdown #countdown [config]="{leftTime: 5, format: 'm:s'}" (event)="timesUp($event)"></countdown></h5>
+  <h5 class="card-title text-center text-view" *ngIf="checkIfFinishPoule()">FINAL</h5>
+  <h5 class="card-title text-center text-view" *ngIf="!checkIfFinishPoule()"><countdown #countdown [config]="{leftTime: 5, format: 'm:s'}" (event)="timesUp($event)"></countdown></h5>
   <div class="card-body">
     <div class="text-center">
       <div class="row">
@@ -52,6 +52,6 @@
 </div>
 <br>
 <div class="text-center" *ngIf="updateScore">
-    <button type="button" (click)="finish()" class="btn btn-lg btn-info">FINISH</button>
+    <button type="button" (click)="finish()" class="btn btn-lg btn-view">FINISH</button>
 </div>
 <p-confirmDialog appendTo="body" [style]="{width: '50vw'}"></p-confirmDialog>

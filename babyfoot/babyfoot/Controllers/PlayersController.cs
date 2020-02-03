@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using babyfoot.Models;
-
+using babyfoot.Views;
 
 namespace babyfoot.Controllers
 {
@@ -15,34 +15,62 @@ namespace babyfoot.Controllers
     public class PlayersController : ControllerBase
     {
         private readonly BabyfootDbContext context;
+        private readonly BabyfootWebInterface webInterface;
 
         public PlayersController(BabyfootDbContext context)
         {
             this.context = context;
+            this.webInterface = new BabyfootWebInterface(context);
         }
 
-        // GET: api/players
+        // GET: api/Players
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers()
+        public async Task<ActionResult<IEnumerable<PlayerView>>> GetPlayers()
         {
-            var players = await context.Players.ToListAsync();
+            var players = await context.Players
+                .Select(t => webInterface.View(t))
+                .ToListAsync();
 
             return players;
         }
 
-        // POST: api/players
-        [HttpPost]
-        public async Task<ActionResult<Player>> PostPlayers(Player player)
+        // GET: api/Players/pseudo
+        [HttpGet("{pseudo}")]
+        public async Task<ActionResult<PlayerView>> GetPlayer(String pseudo)
         {
-            if (context.Players.Any(t => t.Pseudo == player.Pseudo))
-                return base.BadRequest();
+            var player = await context.Players
+                .FirstOrDefaultAsync(t => t.Pseudo.Equals(pseudo));
 
-            context.Players.Add(player);
+            if (player == null)
+                return NotFound();
+
+            var info = webInterface.View(player);
+
+            return info;
+        }
+
+        // POST: api/Players/Add
+        [HttpPost("Add")]
+        public async Task<ActionResult<PlayerView>> PostPlayer(PlayerView view)
+        {
+            if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)) || view.Goals != 0 || view.Champions != 0)
+                return BadRequest();
+
+            var player = new Player
+            {
+                Pseudo = view.Pseudo,
+                Score = view.Score,
+                Goals = view.Goals,
+                Champions = view.Champions
+            };
+
+            context.Add(player);
+
             await context.SaveChangesAsync();
 
-            var task = CreatedAtAction("GetPlayers", new { id = player.PlayerId }, player);
+            var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
 
-            return task;
+            return action;
         }
 
     }

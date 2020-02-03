@@ -1,13 +1,13 @@
 <!-- <div class="card shadow-sm" (click)="displayTeams($event)">
   <div class="card-body text-center">
-    <h5 class="card-title text-info">Display all teams</h5>
+    <h5 class="card-title text-view">Display all teams</h5>
     <p-organizationChart [value]="arbre" selectionMode="single"></p-organizationChart>
   </div>
 </div>
 <br> -->
 <div class="card shadow-sm" *ngIf="checkFinishSemiFinal">
   <div class="card-body">
-    <h5 class="card-title text-center text-info">Final</h5>
+    <h5 class="card-title text-center text-view">Final</h5>
     <div class="row text-center pointer" (click)="selectMatch($event, arbre.match3)">
       <div class="col">
         {{arbre.match3.team1.player1.pseudo}} - {{arbre.match3.team1.player2.pseudo}}
@@ -28,7 +28,7 @@
 <br>
 <div class="card shadow-sm" *ngIf="checkFinishPoule">
   <div class="card-body">
-    <h6 class="card-title text-center text-info">Semi-final</h6>
+    <h6 class="card-title text-center text-view">Semi-final</h6>
     <div class="row text-center pointer" (click)="selectMatch($event, arbre.match1)">
       <div class="col">
         {{arbre.match1.team1.player1.pseudo}} - {{arbre.match1.team1.player2.pseudo}}
@@ -65,7 +65,7 @@
 <br>
 <div class="card shadow-sm" *ngIf="tournament">
   <div class="card-body">
-    <h6 class="card-title text-center text-info">Groupe</h6>
+    <h6 class="card-title text-center text-view">Groupe</h6>
     <div class="row">
       <div class="col-1">
         
@@ -96,7 +96,7 @@
 <br>
 <div class="card shadow-sm" *ngIf="tournament">
   <div class="card-body">
-    <h6 class="card-title text-center text-info">Match</h6>
+    <h6 class="card-title text-center text-view">Match</h6>
     <div  *ngFor="let match of sortedMatchPoule; let i = index"> 
       <hr *ngIf="i!=0">
       <div class="row text-center pointer" (click)="selectMatch($event, match)">

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using babyfoot;
 using babyfoot.Models;
 using System.Net.Http;
+using babyfoot.Views;
 
 namespace babyfoot.Controllers
 {
@@ -16,16 +17,18 @@ namespace babyfoot.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly BabyfootDbContext context;
+        private readonly BabyfootWebInterface webInterface;
 
         public TournamentsController(BabyfootDbContext context)
         {
             this.context = context;
+            this.webInterface = new BabyfootWebInterface(context);
         }
 
         
-        // GET: api/tournaments
+        // GET: api/Tournaments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tournament>>> GetTournament()
+        public async Task<ActionResult<IEnumerable<TournamentView>>> GetTournaments()
         {
             var tournaments = await context.Tournaments
                 .Include(t => t.Matches)
@@ -37,38 +40,89 @@ namespace babyfoot.Controllers
                     .ThenInclude(t => t.GoalsOfMatch)
                         .ToListAsync();
 
-            return tournaments;
+            var views = new List<TournamentView>(tournaments.Select(t => webInterface.View(t)));
+
+            return views;
         }
 
-        // GET: api/tournaments/token
+        // GET: api/Tournaments/token
         [HttpGet("{token}")]
-        public async Task<ActionResult<Tournament>> GetTournament(String token)
+        public async Task<ActionResult<TournamentView>> GetTournament(String token)
         {
-            var tournament = await context.Tournaments.Where(t => t.Token.Equals(token))
-                .Include(t => t.Matches)
-                    .ThenInclude(t => t.TeamsOfMatch)
-                        .ThenInclude(t => t.Team)
-                            .ThenInclude(t => t.PlayersOfTeam)
-                                .ThenInclude(t => t.Player)
-                .Include(t => t.Matches)
-                    .ThenInclude(t => t.GoalsOfMatch)
-                        .FirstOrDefaultAsync();
+            var tournament = await context.Tournaments
+                .Where(t => t.Token.Equals(token))
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.TeamsOfMatch)
+                            .ThenInclude(t => t.Team)
+                                .ThenInclude(t => t.PlayersOfTeam)
+                                    .ThenInclude(t => t.Player)
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.GoalsOfMatch)
+                            .FirstOrDefaultAsync();
 
             if (tournament == null)
             {
                 return NotFound();
             }
 
+            var view = webInterface.View(tournament);
 
-            return tournament;
+            return view;
         }
 
-        // POST: api/tournaments
-        [HttpPost]
-        public void PostTournament([FromBody] Tournament tournament)
+        // PUT: api/Tournaments/token
+        [HttpPut("{token}")]
+        public IActionResult PutTournament(String token, TournamentView view)
         {
-            context.Tournaments.Add(tournament);
+            if (!token.Equals(view.Token))
+                return BadRequest();
+
+            var tournament = webInterface.EntityAsync(view).Result;
+
+            return NoContent();
+        }
+
+        // PUT: api/Tournaments/Synchronize
+        [HttpPut("Synchronize")]
+        public void Synchronize(BabyfootStateView view)
+        {
+            // TODO
+            /*
+            var known = context.Players.Where(t => view.Players.Select(t => t.Pseudo).Contains(t.Pseudo));
+
+
             context.SaveChanges();
+            */
+        }
+
+        // POST: api/Tournaments/Add
+        [HttpPost("Add")]
+        public IActionResult PostTournament(TournamentView view)
+        {
+            if (context.Tournaments.Any(t => t.Token.Equals(view.Token)))
+                return BadRequest();
+
+            var tournament = webInterface.NewEntityAsync(view).Result;
+
+            return NoContent();
+        }
+
+
+        // POST: api/Tournaments/token/AddMatch
+        [HttpPost("{token}/AddMatch")]
+        public ActionResult<IdentifiedMatchView> AddMatch(String token, MatchView view)
+        {
+            var match_token = view.Token;
+            if (!context.Tournaments.Any(t => t.Token.Equals(token)))
+                return BadRequest();
+            if (context.Matches.Any(t => t.Token.Equals(match_token)))
+                return BadRequest();
+
+            var match = webInterface.NewEntityAsync(view, token).Result;
+
+            var task = CreatedAtAction("AddMatch", match_token, view);
+
+            return task;
         }
     }
 }
