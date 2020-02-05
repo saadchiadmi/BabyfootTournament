@@ -283,7 +283,20 @@ namespace babyfoot.Views
                         .ThenInclude(t => t.GoalsOfMatch)
                             .FirstAsync();
 
-            List<Match> matches = new List<Match>();
+            tournament.State = view.State;
+
+            var teams_get = tournament.Matches.SelectMany(t => t.TeamsOfMatch).Select(t => t.Team).DistinctBy(t => t.TeamId);
+            var teams = new List<Team>(teams_get);
+
+            foreach (TournamentTeamView mview in view.Teams)
+            {
+                List<String> vpseudos = mview.Pseudos;
+                var team = teams.First(t => t.PlayersOfTeam.Any(t => vpseudos.Any(p => p.Equals(t.Player.Pseudo))));
+                team.Points = mview.Points;
+                context.Entry(team).State = EntityState.Modified;
+            }
+            await context.SaveChangesAsync();
+
             foreach (MatchView mview in view.Matches)
             {
                 var match = tournament.Matches.FirstOrDefault(t => t.Token.Equals(mview.Token));

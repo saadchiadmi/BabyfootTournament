@@ -61,9 +61,7 @@ namespace babyfoot.Controllers
                             .FirstOrDefaultAsync();
 
             if (tournament == null)
-            {
                 return NotFound();
-            }
 
             var view = webInterface.View(tournament);
 
