@@ -1,19 +1,40 @@
-import { Team } from './Team';
+import { MatchTeam, getScore } from './MatchTeam';
 
-export interface Match {
-
+export interface Match
+{
     token: string;
-    //token: string;
-    //start : Date;
-    team1: Team;
-    team2: Team;
-    finish: boolean;
-    //winner: Team;
-    //niveau: string;
-    ordre : number;
-    scoreTeam1Player1: number;
-    scoreTeam1Player2: number;
-    scoreTeam2Player1: number;
-    scoreTeam2Player2: number;
-    
+    order: number;
+    stage: string;
+    state: string;
+    start : Date;
+    elapsed: number;
+    teams: MatchTeam[];
+}
+
+export function getMatch(matches: Match[], stage: string, order: number): Match {
+    return matches.filter(m => m.stage === stage && m.order == order)[0];
+}
+
+export function getFinalMatch(matches: Match[]): Match {
+    return matches.filter(m => m.stage === "Final")[0];
+}
+
+export function getSemifinalMatch(matches: Match[], order: number): Match {
+    return getMatch(matches, "Semifinal", order);
+}
+
+export function getPoolMatch(matches: Match[], order: number): Match {
+    return getMatch(matches, "Pool", order);
+}
+
+export function getWinnerTeam(match: Match): MatchTeam
+{
+    let score1 = getScore(match.teams[0]);
+    let score2 = getScore(match.teams[1]);
+    if (score1 > score2)
+        return match.teams[0];
+    else if (score1 < score2)
+        return match.teams[1];
+    else
+        return null;
 }

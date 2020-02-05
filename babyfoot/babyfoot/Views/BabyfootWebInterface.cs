@@ -43,9 +43,9 @@ namespace babyfoot.Views
 
 
 
-        public PlayerGoalView View(PlayerGoal entity)
+        public MatchPlayerView View(PlayerGoal entity)
         {
-            return new PlayerGoalView()
+            return new MatchPlayerView()
             {
                 Pseudo = entity.Player.Pseudo,
                 Goals = entity.Goals
@@ -59,29 +59,21 @@ namespace babyfoot.Views
 
             var view = new MatchTeamView()
             {
-                Points = entity.Team.Points,
-                Players = new List<PlayerGoalView>()
-                {
-                    View(entity.Match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p1.Pseudo))),
-                    View(entity.Match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p2.Pseudo)))
-                }
+                View(entity.Match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p1.Pseudo))),
+                View(entity.Match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p2.Pseudo)))
             };
             return view;
         }
 
-        public TeamView View(Team entity)
+        public TournamentTeamView View(Team entity)
         {
             var p1 = entity.PlayersOfTeam.ElementAt(0).Player;
             var p2 = entity.PlayersOfTeam.ElementAt(1).Player;
 
-            var view = new TeamView()
+            var view = new TournamentTeamView()
             {
                 Points = entity.Points,
-                Players = new List<PlayerView>()
-                {
-                    View(p1),
-                    View(p2)
-                }
+                Pseudos = new List<String> { p1.Pseudo, p2.Pseudo }
             };
             return view;
         }
@@ -116,14 +108,21 @@ namespace babyfoot.Views
             return view;
         }
 
-        public Match Entity(MatchView view)
+        public async Task<Match> ModifyAsync(MatchView view, Match match)
         {
-            var match = EntityToSaveAsync(view).Result;
-            context.SaveChanges();
+            ModifyToSave(view, match);
+            await context.SaveChangesAsync();
             return match;
         }
 
-        public async Task<Match> EntityToSaveAsync(MatchView view)
+        public async Task<Match> ModifyAsync(MatchView view)
+        {
+            var match = await ModifyToSaveAsync(view);
+            await context.SaveChangesAsync();
+            return match;
+        }
+
+        public async Task<Match> ModifyToSaveAsync(MatchView view)
         {
             var match = await context.Matches
                 .Where(t => t.Token.Equals(view.Token))
@@ -134,6 +133,14 @@ namespace babyfoot.Views
                         .ThenInclude(t => t.Player)
                             .FirstOrDefaultAsync();
 
+            ModifyToSave(view, match);
+
+            return match;
+        }
+
+        public void ModifyToSave(MatchView view, Match match)
+        {
+
             match.Order = view.Order;
             match.Stage = view.Stage;
             match.State = view.State;
@@ -142,11 +149,11 @@ namespace babyfoot.Views
             match.StartDate = view.StartDate;
 
             var (t1, t2) = (view.Teams[0], view.Teams[1]);
-            var (p1, p2) = (t1.Players[0], t1.Players[1]);
-            var (p3, p4) = (t2.Players[0], t2.Players[1]);
+            var (p1, p2) = (t1[0], t1[1]);
+            var (p3, p4) = (t2[0], t2[1]);
 
-            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(p1.Pseudo))).Team.Points = t1.Points;
-            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(p3.Pseudo))).Team.Points = t2.Points;
+            //match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(p1.Pseudo))).Team.Points = t1.Points;
+            //match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(p3.Pseudo))).Team.Points = t2.Points;
 
             match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p1.Pseudo)).Goals = p1.Goals;
             match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p2.Pseudo)).Goals = p2.Goals;
@@ -154,18 +161,9 @@ namespace babyfoot.Views
             match.GoalsOfMatch.First(t => t.Player.Pseudo.Equals(p4.Pseudo)).Goals = p4.Goals;
 
             context.Entry(match).State = EntityState.Modified;
-
-            return match;
         }
 
-
-        public Match NewEntity(MatchView view, String tournament_token)
-        {
-            var match = NewEntityAsync(view, tournament_token).Result;
-            return match;
-        }
-
-        public async Task<Match> NewEntityAsync(MatchView view, String tournament_token)
+        public async Task<Match> CreateAsync(MatchView view, String tournament_token)
         {
             var match = new Match
             {
@@ -187,12 +185,12 @@ namespace babyfoot.Views
 
 
             // get pseudos of view
-            var pseudos = new List<String>(view.Teams.SelectMany(t => t.Players).Select(t => t.Pseudo));
+            var pseudos = new List<String>(view.Teams.SelectMany(t => t).Select(t => t.Pseudo));
 
             // get players and teams views
             var (vt1, vt2) = (view.Teams[0], view.Teams[1]);
-            var (vp1, vp2) = (vt1.Players[0], vt1.Players[1]);
-            var (vp3, vp4) = (vt2.Players[0], vt2.Players[1]);
+            var (vp1, vp2) = (vt1[0], vt1[1]);
+            var (vp3, vp4) = (vt2[0], vt2[1]);
 
             // get team-players
             var team_players_query = context.TeamPlayers
@@ -212,8 +210,8 @@ namespace babyfoot.Views
             var (p3, p4) = (tp3.Player, tp4.Player);
 
             // set team points
-            t1.Points = vt1.Points;
-            t2.Points = vt2.Points;
+            //t1.Points = vt1.Points;
+            //t2.Points = vt2.Points;
 
             // set goals of match
             match.GoalsOfMatch = new List<PlayerGoal>
@@ -238,7 +236,18 @@ namespace babyfoot.Views
             return match;
         }
 
-
+        public bool CheckState(MatchView view, Match entity)
+        {
+            if (!(entity.Stage.Equals(view.Stage)))
+                return false;
+            if (!(entity.State <= view.State))
+                return false;
+            if (!(entity.StartDate.Equals(view.StartDate)))
+                return false;
+            if (!(entity.ElapsedSeconds <= view.ElapsedSeconds))
+                return false;
+            return true;
+        }
 
 
 
@@ -254,20 +263,14 @@ namespace babyfoot.Views
             {
                 Token = entity.Token,
                 CreateDate = entity.CreateDate,
-                State = entity.State,
-                Teams = new List<TeamView>(entity.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => View(t.Team))),
+                StateStr = entity.State.ToString(),
+                Teams = new List<TournamentTeamView>(entity.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => View(t.Team))),
                 Matches = new List<MatchView>(entity.Matches.Select(t => View(t)))
             };
             return view;
         }
 
-        public Tournament Entity(TournamentView view)
-        {
-            var tournament = EntityAsync(view).Result;
-            return tournament;
-        }
-
-        public async Task<Tournament> EntityAsync(TournamentView view)
+        public async Task<Tournament> ModifyAsync(TournamentView view)
         {
             var tournament = await context.Tournaments
                 .Where(t => t.Token.Equals(view.Token))
@@ -285,9 +288,9 @@ namespace babyfoot.Views
             {
                 var match = tournament.Matches.FirstOrDefault(t => t.Token.Equals(mview.Token));
                 if (match == null)
-                    match = NewEntity(mview, tournament.Token);
+                    match = CreateAsync(mview, tournament.Token).Result;
                 else
-                    match = Entity(mview);
+                    match = ModifyAsync(mview).Result;
             }
 
             context.Entry(tournament).State = EntityState.Modified;
@@ -298,7 +301,7 @@ namespace babyfoot.Views
 
 
 
-        public async Task<Tournament> NewEntityAsync(TournamentView view)
+        public async Task<Tournament> CreateAsync(TournamentView view)
         {
             // assume players in the view are known
 
@@ -315,7 +318,7 @@ namespace babyfoot.Views
             context.Add(tournament);
             await context.SaveChangesAsync();
 
-            var vpseudos = view.Teams.SelectMany(t => t.Players.Select(t => t.Pseudo));
+            var vpseudos = view.Teams.SelectMany(t => t.Pseudos);
             var players = context.Players.Where(t => vpseudos.Contains(t.Pseudo));
 
             // set teams
@@ -330,17 +333,14 @@ namespace babyfoot.Views
             // save (create team ids)
             await context.SaveChangesAsync();
 
-            // set team-players and set players
+            // set team-players
             int i = 0;
             foreach (var vteam in view.Teams)
             {
                 var team = teams[i];
-                foreach(var vplayer in vteam.Players)
+                foreach(var vpseudo in vteam.Pseudos)
                 {
-                    var player = players.First(t => t.Pseudo.Equals(vplayer.Pseudo));
-                    player.Score = vplayer.Score;
-                    player.Goals = vplayer.Goals;
-                    player.Champions = vplayer.Champions;
+                    var player = players.First(t => t.Pseudo.Equals(vpseudo));
                     var pt = new PlayerTeam { Player = player, Team = team };
                     context.Add(pt);
                 }
@@ -351,7 +351,7 @@ namespace babyfoot.Views
             await context.SaveChangesAsync();
 
             // set matches
-            tournament.Matches = new List<Match>(view.Matches.Select(t => NewEntity(t, tournament.Token)));
+            tournament.Matches = new List<Match>(view.Matches.Select(t => CreateAsync(t, tournament.Token).Result));
 
             // save
             context.Entry(tournament).State = EntityState.Modified;

@@ -5,47 +5,47 @@
   <div class="card-body">
     <div class="text-center">
       <div class="row">
-        <div class="col">{{selectedMatch.team1.player1.pseudo}}</div>
-        <div class="col">{{selectedMatch.scoreTeam1Player1}}</div>
-        <div class="col">{{selectedMatch.scoreTeam2Player1}}</div>
-        <div class="col">{{selectedMatch.team2.player1.pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0].players[0].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0].players[0].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1].players[0].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1].players[0].pseudo}}</div>
       </div>
       <br>
       <div class="row">
         <div class="col">
-          <button type="button" (click)="dropGoal('scoreTeam1Player1')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal('teams[0].players[0].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="addGoal('scoreTeam1Player1')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal('teams[0].players[0].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
         </div>
         <div class="col">
-          <button type="button" (click)="addGoal('scoreTeam2Player1')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal('teams[1].players[0].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="dropGoal('scoreTeam2Player1')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal('teams[1].players[0].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
         </div>
       </div>
       <br>
       <div class="row">
-        <div class="col">{{selectedMatch.team1.player2.pseudo}}</div>
-        <div class="col">{{selectedMatch.scoreTeam1Player2}}</div>
-        <div class="col">{{selectedMatch.scoreTeam2Player2}}</div>
-        <div class="col">{{selectedMatch.team2.player2.pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0].players[1].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0].players[1].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1].players[1].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1].players[1].pseudo}}</div>
       </div>
       <br>
       <div class="row">
         <div class="col">
-          <button type="button" (click)="dropGoal('scoreTeam1Player2')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal('teams[0].players[1].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="addGoal('scoreTeam1Player2')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal('teams[0].players[1].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
         </div>
         <div class="col">
-          <button type="button" (click)="addGoal('scoreTeam2Player2')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal('teams[1].players[1].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="dropGoal('scoreTeam2Player2')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal('teams[1].players[1].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
         </div>
       </div>
       <div class="ui-g-12 font-weight-bold">
-        {{selectedMatch.scoreTeam1Player1 + selectedMatch.scoreTeam1Player2}} -
-        {{selectedMatch.scoreTeam2Player1 + selectedMatch.scoreTeam2Player2}}
+        {{selectedMatch.teams[0].players[0].goals + selectedMatch.teams[0].players[1].goals}} -
+        {{selectedMatch.teams[1].players[0].goals + selectedMatch.teams[1].players[1].goals}}
       </div>
     </div>
   </div>

@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { OneTournamentComponent } from './one-tournament.component';
+import 'jasmine'
 
 describe('OneTournamentComponent', () => {
   let component: OneTournamentComponent;

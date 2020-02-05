@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Tournament } from '../entities/Tournament';
 import { SelectItem } from 'primeng/primeng';
 import { TournamentService } from '../service/tournament.service';
-import { Team } from '../entities/Team';
+import { TournamentTeam } from '../entities/TournamentTeam';
 import { TeamService } from '../service/team.service';
+import { getFinalMatch, getSemifinalMatch } from '../entities/Match';
 
 @Component({
   selector: 'app-tournament',
@@ -14,7 +15,7 @@ export class TournamentComponent implements OnInit {
 
     tournaments: Tournament[];
     selectedTournament: Tournament;
-    team: Team;
+    team: TournamentTeam;
     displayDialog: boolean;
     sortOptions: SelectItem[];
     sortKey: string;
@@ -24,7 +25,7 @@ export class TournamentComponent implements OnInit {
     constructor(private tournamentservice: TournamentService, private teamservice: TeamService) { }
 
     ngOnInit() {
-        this.tournamentservice.getTournament().subscribe(tournament => this.tournaments = tournament.filter(t => t.finish));
+        this.tournamentservice.getTournament().subscribe(tournament => this.tournaments = tournament.filter(t => t.state === "Ended"));
         this.teamservice.getTeamById(1).subscribe(res => {
             this.team = res;
             console.log(this.team);

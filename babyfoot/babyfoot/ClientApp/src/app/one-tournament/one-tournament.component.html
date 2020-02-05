@@ -8,19 +8,19 @@
 <div class="card shadow-sm" *ngIf="checkFinishSemiFinal">
   <div class="card-body">
     <h5 class="card-title text-center text-view">Final</h5>
-    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match3)">
+    <div class="row text-center pointer" (click)="selectMatch($event, tree[0])">
       <div class="col">
-        {{arbre.match3.team1.player1.pseudo}} - {{arbre.match3.team1.player2.pseudo}}
+        {{tree[0].teams[0].players[0].pseudo}} - {{tree[0].teams[0].players[1].pseudo}}
       </div>
-      <div class="col" *ngIf="arbre.match3.finish">
-        {{arbre.match3.scoreTeam1Player1 + arbre.match3.scoreTeam1Player2}} - 
-        {{arbre.match3.scoreTeam2Player1 + arbre.match3.scoreTeam2Player2}}
+      <div class="col" *ngIf="tree[0].finish">
+        {{tree[0].teams[0].players[0].goals + tree[0].teams[0].players[1].goals}} - 
+        {{tree[0].teams[1].players[0].goals + tree[0].teams[1].players[1].goals}}
       </div>
-      <div class="col" *ngIf="!arbre.match3.finish">
+      <div class="col" *ngIf="!tree[0].finish">
         -
       </div>
       <div class="col">
-        {{arbre.match3.team2.player1.pseudo}} - {{arbre.match3.team2.player2.pseudo}}
+        {{tree[0].teams[1].players[0].pseudo}} - {{tree[0].teams[1].players[1].pseudo}}
       </div>
     </div>
   </div>
@@ -29,35 +29,35 @@
 <div class="card shadow-sm" *ngIf="checkFinishPoule">
   <div class="card-body">
     <h6 class="card-title text-center text-view">Semi-final</h6>
-    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match1)">
+    <div class="row text-center pointer" (click)="selectMatch($event, tree[1])">
       <div class="col">
-        {{arbre.match1.team1.player1.pseudo}} - {{arbre.match1.team1.player2.pseudo}}
+        {{tree[1].teams[0].players[0].pseudo}} - {{tree[1].teams[0].players[1].pseudo}}
       </div>
-      <div class="col" *ngIf="arbre.match1.finish">
-        {{arbre.match1.scoreTeam1Player1 + arbre.match1.scoreTeam1Player2}} - 
-        {{arbre.match1.scoreTeam2Player1 + arbre.match1.scoreTeam2Player2}}
+      <div class="col" *ngIf="tree[1].finish">
+        {{tree[1].teams[0].players[0].goals + tree[1].teams[0].players[1].goals}} - 
+        {{tree[1].teams[1].players[0].goals + tree[1].teams[1].players[1].goals}}
       </div>
-      <div class="col" *ngIf="!arbre.match1.finish">
+      <div class="col" *ngIf="!tree[1].finish">
         -
       </div>
       <div class="col">
-        {{arbre.match1.team2.player1.pseudo}} - {{arbre.match1.team2.player2.pseudo}}
+        {{tree[1].teams[1].players[0].pseudo}} - {{tree[1].teams[1].players[1].pseudo}}
       </div>
     </div>
     <hr>
-    <div class="row text-center pointer" (click)="selectMatch($event, arbre.match2)">
-      <div class="col">
-        {{arbre.match2.team1.player1.pseudo}} - {{arbre.match2.team1.player2.pseudo}}
-      </div>
-      <div class="col" *ngIf="arbre.match2.finish">
-        {{arbre.match2.scoreTeam1Player1 + arbre.match2.scoreTeam1Player2}} - 
-        {{arbre.match2.scoreTeam2Player1 + arbre.match2.scoreTeam2Player2}}
-      </div>
-      <div class="col" *ngIf="!arbre.match2.finish">
+    <div class="row text-center pointer" (click)="selectMatch($event, tree[2])">
+        <div class="col">
+            {{tree[2].teams[0].players[0].pseudo}} - {{tree[2].teams[0].players[1].pseudo}}
+        </div>
+        <div class="col" *ngIf="tree[2].finish">
+            {{tree[2].teams[0].players[0].goals + tree[2].teams[0].players[1].goals}} -
+            {{tree[2].teams[1].players[0].goals + tree[2].teams[1].players[1].goals}}
+        </div>
+      <div class="col" *ngIf="!tree[2].finish">
         -
       </div>
       <div class="col">
-        {{arbre.match2.team2.player1.pseudo}} - {{arbre.match2.team2.player2.pseudo}}
+        {{tree[2].teams[1].players[0].pseudo}} - {{tree[2].teams[1].players[1].pseudo}}
       </div>
     </div>
   </div>
@@ -84,10 +84,10 @@
           {{i+1}}
         </div>
         <div class="col">
-          {{team.player1.pseudo}} - {{team.player2.pseudo}}
+          {{team.pseudos[0]}} - {{team.pseudos[1]}}
         </div>
         <div class="col text-center">
-          {{team.point}}
+          {{team.points}}
         </div>
       </div>
   </div>
@@ -101,17 +101,17 @@
       <hr *ngIf="i!=0">
       <div class="row text-center pointer" (click)="selectMatch($event, match)">
         <div class="col">
-            {{match.team1.player1.pseudo}} - {{match.team1.player2.pseudo}}
+            {{match.teams[0].players[0].pseudo}} - {{match.teams[0].players[1].pseudo}}
         </div>
         <div class="col" *ngIf="match.finish">
-          {{match.scoreTeam1Player1 + match.scoreTeam1Player2}} - 
-          {{match.scoreTeam2Player1 + match.scoreTeam2Player2}}
+            {{match.teams[0].players[0].goals + match.teams[0].players[1].goals}} -
+            {{match.teams[1].players[0].goals + match.teams[1].players[1].goals}}
         </div>
         <div class="col" *ngIf="!match.finish">
           -
         </div>
         <div class="col">
-          {{match.team2.player1.pseudo}} - {{match.team2.player2.pseudo}}
+            {{match.teams[1].players[0].pseudo}} - {{match.teams[1].players[1].pseudo}}
         </div>
       </div>
   </div>
@@ -121,31 +121,31 @@
     <div class="ui-g-12 ui-g-nopad text-center" *ngIf="selectedMatch">
         <div class="ui-g-6">
           <div class="row">
-            <div class="col">{{selectedMatch.team1.player1.pseudo}}</div>
-            <div class="col">{{selectedMatch.scoreTeam1Player1}}</div>
+              <div class="col">{{selectedMatch.teams[0].players[0].pseudo}}</div>
+              <div class="col">{{selectedMatch.teams[0].players[0].goals}}</div>
           </div>
         </div>
         <div class="ui-g-6">
           <div class="row">
-              <div class="col">{{selectedMatch.scoreTeam2Player1}}</div>
-              <div class="col">{{selectedMatch.team2.player1.pseudo}}</div>
+              <div class="col">{{selectedMatch.teams[1].players[0].goals}}</div>
+              <div class="col">{{selectedMatch.teams[1].players[0].pseudo}}</div>
           </div>
         </div>
         <div class="ui-g-6">
           <div class="row">
-              <div class="col">{{selectedMatch.team1.player2.pseudo}}</div>
-              <div class="col">{{selectedMatch.scoreTeam1Player2}}</div>
+              <div class="col">{{selectedMatch.teams[0].players[1].pseudo}}</div>
+              <div class="col">{{selectedMatch.teams[0].players[1].goals}}</div>
           </div>
         </div>
         <div class="ui-g-6">
           <div class="row">
-              <div class="col">{{selectedMatch.scoreTeam2Player2}}</div>
-              <div class="col">{{selectedMatch.team2.player2.pseudo}}</div>
+              <div class="col">{{selectedMatch.teams[1].players[1].goals}}</div>
+              <div class="col">{{selectedMatch.teams[1].players[1].pseudo}}</div>
           </div>
           </div>
         <div class="ui-g-12">
-          {{selectedMatch.scoreTeam1Player1 + selectedMatch.scoreTeam1Player2}} -
-          {{selectedMatch.scoreTeam2Player1 + selectedMatch.scoreTeam2Player2}}
+            {{selectedMatch.teams[0].players[0].goals + match.teams[0].players[1].goals}} -
+            {{selectedMatch.teams[1].players[0].goals + match.teams[1].players[1].goals}}
         </div>
     </div>
 </p-dialog>

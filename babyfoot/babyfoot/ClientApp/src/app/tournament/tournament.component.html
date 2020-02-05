@@ -1,4 +1,4 @@
-<p-dataView #dv [value]="tournaments" [paginator]="true" [rows]="5" paginatorPosition="both" filterBy="arbre.team.player1.pseudo"
+<p-dataView #dv [value]="tournaments" [paginator]="true" [rows]="5" paginatorPosition="both" filterBy="arbre.team.players[0].pseudo"
 [sortField]="sortField" [sortOrder]="sortOrder">
     <p-header>
         <div class="ui-helper-clearfix">
@@ -22,10 +22,10 @@
                     <div class="ui-g-10 ui-sm-6"><b>{{tournament.date | date: 'dd/MM/yyyy'}}</b></div>
 
                     <div class="ui-g-2 ui-sm-6">Player 1: </div>
-                    <div class="ui-g-10 ui-sm-6"><b>{{tournament.arbre.match3.team1.player1.pseudo}}</b></div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{getFinalMatch(tournament).team[0].pseudos[0]}}</b></div>
 
                     <div class="ui-g-2 ui-sm-6">Player 2: </div>
-                    <div class="ui-g-10 ui-sm-6"><b>{{tournament.arbre.match3.team1.player2.pseudo}}</b></div>
+                    <div class="ui-g-10 ui-sm-6"><b>{{getFinalMatch(tournament).team[0].pseudos[1]}}</b></div>
                 </div>
             </div>
         </div>

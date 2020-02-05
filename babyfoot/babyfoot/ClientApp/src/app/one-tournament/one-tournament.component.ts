@@ -3,10 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {ConfirmationService} from 'primeng/api';
 import { Tournament } from '../entities/Tournament';
 import { TournamentService } from '../service/tournament.service';
-import { Team } from '../entities/Team';
-import { Match } from '../entities/Match';
-import { Arbre } from '../entities/Arbre';
-import { Poule } from '../entities/Poule';
+import { TournamentTeam } from '../entities/TournamentTeam';
+import { Match, getFinalMatch, getSemifinalMatch, getPoolMatch } from '../entities/Match';
 import { TeamService } from '../service/team.service';
 
 @Component({
@@ -15,49 +13,55 @@ import { TeamService } from '../service/team.service';
   styleUrls: ['./one-tournament.component.css'],
   providers: [ConfirmationService]
 })
-export class OneTournamentComponent implements OnInit {
+export class OneTournamentComponent implements OnInit
+{
 
     id: string;
     tournament: Tournament;
-    arbre = {} as Arbre;
-    poule = {} as Poule;
+    tree: Match[];
+    //poule = {} as Pool;
     checkFinishPoule : boolean = false;
     checkFinishSemiFinal : boolean = false;
     displayDialog: boolean;
     selectedMatch: Match;
-    sortedTeamPoule: Team[];
-    sortedMatchPoule: Match[];
+    sortedPoolTeams: TournamentTeam[];
+    sortedPoolMatches: Match[];
 
     constructor(private confirmationService: ConfirmationService, private activatedRoute: ActivatedRoute, private tournamentService: TournamentService, private teamservice: TeamService, private router: Router) { }
 
-  ngOnInit() {
-    this.tournament = window.history.state.tournament;
-    if(this.tournament) 
-        localStorage.setItem('tournament', JSON.stringify(this.tournament));
-    else 
-        this.tournament = JSON.parse(localStorage.getItem('tournament'));
-    if(!this.tournament){
-        this.activatedRoute.params.subscribe(params => {
-            this.id = params['id'];
-            this.tournamentService.getTournamentById(this.id).subscribe(res => this.tournament = res);
-        });
-    }
-    this.poule = this.tournament.poule;
-    this.arbre = this.tournament.arbre;
-    this.sortPoule();
-    this.checkFinishPoule = this.tournament.poule.matchs.filter(m => m.finish==true).length == this.tournament.poule.matchs.length ? true : false;
-    this.checkFinishSemiFinal = this.tournament.arbre.match1.finish && this.tournament.arbre.match2.finish ? true : false;
+    ngOnInit()
+    {
+        this.tournament = window.history.state.tournament;
+        if(this.tournament) 
+            localStorage.setItem('tournament', JSON.stringify(this.tournament));
+        else 
+            this.tournament = JSON.parse(localStorage.getItem('tournament'));
+            if (!this.tournament)
+            {
+            this.activatedRoute.params.subscribe(params =>
+            {
+                this.id = params['id'];
+                this.tournamentService.getTournamentById(this.id).subscribe(res => this.tournament = res);
+            });
+        }
+        this.sortPoule();
+        this.tree = [
+            getFinalMatch(this.tournament.matches),
+            getSemifinalMatch(this.tournament.matches, 1),
+            getSemifinalMatch(this.tournament.matches, 2)];
+        this.checkFinishPoule = this.tournament.matches.filter(m => m.state === "Ended"==true).length == this.tournament.matches.length ? true : false;
+        this.checkFinishSemiFinal = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") && this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
     }
 
     selectMatch(event: Event, match: Match) {
         this.selectedMatch = match;
-        if (match.finish) {
+        if (match.state === "Ended") {
             this.displayDialog = true;
             event.preventDefault();
         }
         else{
             this.confirmationService.confirm({
-                message: 'Are you sure that you want to start the match?',
+                message: 'Are you sure you want to start the match ?',
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
@@ -74,22 +78,23 @@ export class OneTournamentComponent implements OnInit {
     }
 
     /*defineArbre() {
-        this.arbre.match1 = this.tournament.matches.filter(m => m.niveau == "demifinal")[0];
-        this.arbre.match2 = this.tournament.matches.filter(m => m.niveau == "demifinal")[1];
-        this.arbre.match3 = this.tournament.matches.filter(m => m.niveau == "final")[0];
-        this.poule.matchs = this.tournament.matches.filter(m => m.niveau == "poule");
+        this.arbre.semifinal1 = this.tournament.matches.filter(m => m.niveau == "demifinal")[0];
+        this.arbre.semifinal2 = this.tournament.matches.filter(m => m.niveau == "demifinal")[1];
+        this.final = this.tournament.matches.filter(m => m.niveau == "final")[0];
+        this.matchs = this.tournament.matches.filter(m => m.niveau == "poule");
     }*/
 
     sortPoule() {
 
-        this.sortedTeamPoule = this.tournament.poule.teams.sort((n1, n2) => {
-            if (n1.point > n2.point) return -1;
-            if (n1.point < n2.point) return 1;
+        this.sortedPoolTeams = this.tournament.teams.sort((n1, n2) => {
+            if (n1.points > n2.points) return -1;
+            if (n1.points < n2.points) return 1;
             return 0;
         });
-        this.sortedMatchPoule = this.poule.matchs.sort((n1,n2) => {
-            if (n1.ordre > n2.ordre) return 1;
-            if (n1.ordre < n2.ordre) return -1;
+        this.sortedPoolMatches = this.tournament.matches.sort((n1, n2) =>
+        {
+            if (n1.order > n2.order) return 1;
+            if (n1.order < n2.order) return -1;
             return 0;
         });
     }

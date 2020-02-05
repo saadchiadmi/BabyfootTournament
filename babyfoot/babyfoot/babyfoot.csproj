@@ -43,12 +43,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\app\entities\Player.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <TypeScriptCompile Remove="ClientApp\src\app\entities\Match.ts" />
-    <TypeScriptCompile Remove="ClientApp\src\app\entities\Team.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\entities\MatchTeam.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\entities\TournamentTeam.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ClientApp\src\app\entities\Player.js">
+      <DependentUpon>Player.ts</DependentUpon>
+    </None>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

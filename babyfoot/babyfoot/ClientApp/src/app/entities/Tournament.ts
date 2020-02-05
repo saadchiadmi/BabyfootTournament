@@ -1,18 +1,13 @@
-import { Poule } from './Poule';
-import { Arbre } from './Arbre';
 import { Match } from './Match';
 import { TournamentService } from '../service/tournament.service';
-import { Team } from './Team';
+import { TournamentTeam } from './TournamentTeam';
 
-export interface Tournament {
+export interface Tournament
+{
 
     token: string;
-    //date: Date;
-    finish: boolean;
-    poule: Poule;
-    arbre: Arbre;
-    //matches: Match[];
-    //teamsid: number[];
-   // teams: Team[];
-    //winner: Team;
+    date: Date;
+    state: string;
+    teams: TournamentTeam[];
+    matches: Match[];
 }

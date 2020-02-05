@@ -24,7 +24,7 @@ namespace babyfoot.Controllers
             this.webInterface = new BabyfootWebInterface(context);
         }
 
-        // GET: api/Matches/token
+        // GET: api/Matches/{token}
         [HttpGet("{token}")]
         public async Task<ActionResult<MatchView>> GetMatch(String token)
         {
@@ -39,23 +39,21 @@ namespace babyfoot.Controllers
                 .FirstOrDefaultAsync();
 
             if (match == null)
-            {
                 return NotFound();
-            }
 
             var view = webInterface.View(match);
 
             return view;
         }
 
-        // PUT: api/Matches/token
+        // PUT: api/Matches/{token}
         [HttpPut("{token}")]
         public async Task<IActionResult> PutMatch(String token, MatchView view)
         {
             if (!token.Equals(view.Token))
                 return BadRequest();
 
-            var before = await context.Matches.Where(t => t.Token.Equals(token))
+            var match = await context.Matches.Where(t => t.Token.Equals(token))
                 .Include(t => t.Tournament)
                 .Include(t => t.GoalsOfMatch)
                 .Include(t => t.TeamsOfMatch)
@@ -64,28 +62,42 @@ namespace babyfoot.Controllers
                     .ThenInclude(t => t.Player)
                     .FirstOrDefaultAsync();
 
-            if (before == null)
+            if (match == null)
                 return NotFound();
 
-
-
-            // check new match state, optional
-            if (!(before.Stage.Equals(view.Stage)))
-                return BadRequest();
-            if (!(before.State <= view.State))
-                return BadRequest();
-            if (!(before.StartDate.Equals(view.StartDate)))
-                return BadRequest();
-            if (!(before.ElapsedSeconds <= view.ElapsedSeconds))
+            if (!webInterface.CheckState(view, match))
                 return BadRequest();
 
+            await webInterface.ModifyAsync(view, match);
 
+            return NoContent();
+        }
 
-            var match = webInterface.EntityToSaveAsync(view).Result;
+        // PUT: api/Matches/{token}/points
+        [HttpPut("{token}/points")]
+        public async Task<IActionResult> PutEndedPoolMatch(String token, PointsView view)
+        {
+            var match = await context.Matches.Where(t => t.Token.Equals(token))
+                .Include(t => t.Tournament)
+                .Include(t => t.GoalsOfMatch)
+                .Include(t => t.TeamsOfMatch)
+                    .ThenInclude(t => t.Team)
+                    .ThenInclude(t => t.PlayersOfTeam)
+                    .ThenInclude(t => t.Player)
+                    .FirstOrDefaultAsync();
+
+            if (match == null)
+                return NotFound();
+
+            if (!(match.State == MatchState.Ended))
+                return BadRequest();
+
+            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[0].Pseudos[0]))).Team.Points = view[0].Points;
+            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[1].Pseudos[0]))).Team.Points = view[1].Points;
 
             context.Entry(match).State = EntityState.Modified;
 
-            await context.SaveChangesAsync();
+            context.SaveChanges();
 
             return NoContent();
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace babyfoot.Views
 {
-    public class PlayerGoalView
+    public class MatchPlayerView
     {
         [JsonProperty(Order = 1, PropertyName = "pseudo")]
         public String Pseudo { get; set; }

@@ -16,14 +16,17 @@ namespace babyfoot.Views
         public System.DateTime CreateDate { get; set; }
 
         [JsonProperty(Order = 3, PropertyName = "state")]
-        public TournamentState State { get; set; }
-
-
+        public String StateStr { get; set; }
 
         [JsonProperty(Order = 4, PropertyName = "teams")]
-        public List<TeamView> Teams { get; set; }
+        public List<TournamentTeamView> Teams { get; set; }
 
         [JsonProperty(Order = 5, PropertyName = "matches")]
         public List<MatchView> Matches { get; set; }
+
+
+
+        [JsonIgnore]
+        public TournamentState State => (TournamentState)Enum.Parse(typeof(TournamentState), StateStr);
     }
 }

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatchService } from '../service/match.service';
-import { Match } from '../entities/Match';
+import { Match, getFinalMatch, getSemifinalMatch, getPoolMatch, getWinnerTeam } from '../entities/Match';
 import {ConfirmationService} from 'primeng/api';
 import { Tournament } from '../entities/Tournament';
-import { Team } from '../entities/Team';
+import { TournamentTeam, getTeam, toMatchTeam } from '../entities/TournamentTeam';
+import { MatchTeam, getScore, newMatchTeam } from '../entities/MatchTeam';
 
 @Component({
   selector: 'app-match',
@@ -18,6 +19,7 @@ export class MatchComponent implements OnInit {
     tournament: Tournament;
     selectedMatch: Match;
     updateScore: boolean = false;
+    max_goals: number = 5;
 
     constructor(private confirmationService: ConfirmationService, private activatedRoute: ActivatedRoute, private matchService: MatchService, private router: Router) { }
 
@@ -39,29 +41,38 @@ export class MatchComponent implements OnInit {
             });
     }
 
-    addGoal(s: string) {
-        this.selectedMatch[s] = this.selectedMatch[s] + 1; 
-        if (this.selectedMatch.scoreTeam1Player1+this.selectedMatch.scoreTeam1Player2==5) {
+    addGoal(s: string)
+    {
+        this.selectedMatch[s] = this.selectedMatch[s] + 1;
+        let t1 = this.selectedMatch.teams[0];
+        let t2 = this.selectedMatch.teams[1];
+
+        if (t1.players[0].goals + t1.players[1].goals == this.max_goals)
+        {
             //put match
-            this.selectedMatch.finish = true;
-        }else
-        if (this.selectedMatch.scoreTeam2Player1+this.selectedMatch.scoreTeam2Player2==5) {
+            this.selectedMatch.state = "Ended";
+        }
+        else if (t2.players[0].goals + t2.players[1].goals == this.max_goals)
+        {
             //put match
-            this.selectedMatch.finish = true;
+            this.selectedMatch.state = "Ended";
         }
         this.putMatch(this.selectedMatch);
-        if (this.selectedMatch.finish==true) {
+        if (this.selectedMatch.state === "Ended")
+        {
             this.confirmationService.confirm({
                 message: 'Are you sure that you want to finish the match',
                 header: 'Confirmation',
                 icon: 'pi pi-exclamation-triangle',
-                accept: () => {
+                accept: () =>
+                {
                     this.compute();
                     //put tournament
-                    this.router.navigate(["/tournament", this.tournament.token], { state: {tournament: this.tournament}});
+                    this.router.navigate(["/tournaments", this.tournament.token], { state: {tournament: this.tournament}});
                 },
-                reject: () => {
-                    this.selectedMatch.finish = false;
+                reject: () =>
+                {
+                    this.selectedMatch.state === "InProgress";
                     this.dropGoal(s);
                 }
             });
@@ -73,134 +84,142 @@ export class MatchComponent implements OnInit {
           this.selectedMatch[s] = this.selectedMatch[s] - 1; 
     }
 
-    getMatch(id : string): Match{
-        let matchPoule : Match =  this.tournament.poule.matchs.filter(m => m.token === id).find(m=>true);
-        let matchArbre : Match;
-        if (!matchPoule) {
-            if (this.tournament.arbre.match1.token === id) {
-                matchArbre = this.tournament.arbre.match1;
-            }else if (this.tournament.arbre.match2.token === id) {
-                matchArbre = this.tournament.arbre.match2;
-            }else if (this.tournament.arbre.match3.token === id) {
-                matchArbre = this.tournament.arbre.match3;
-            }
-            if (matchArbre)
-                return matchArbre;
-            else return null
-        }else{
-            return matchPoule
-        }
+    getMatch(token: string): Match
+    {
+        let match: Match = this.tournament.matches.filter(m => m.token === token)[0];
+        return match;
     }
 
-    checkIfMatchInPoule(match : Match) : Match{
-        let matchPoule : Match =  this.tournament.poule.matchs.filter(m => m.token === match.token).find(m=>true);
-        if(matchPoule){
-            return matchPoule
-        }else 
-            return null;
+    checkIfFinishPoule(): boolean
+    {
+        return this.tournament.matches.filter(m => m.state === "Ended").length == this.tournament.matches.length;
     }
 
-    checkIfFinishPoule() : boolean{
-        return this.tournament.poule.matchs.filter(m => m.finish==true).length == this.tournament.poule.matchs.length ? true : false;
+    checkIfFinishSemiFinal(): boolean
+    {
+        return this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") && this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
     }
 
-    checkIfFinishSemiFinal() : boolean{
-        return this.tournament.arbre.match1.finish && this.tournament.arbre.match2.finish ? true : false;
-    }
-
-    putMatch(match : Match){
-        let matchPoule : Match =  this.tournament.poule.matchs.filter(m => m.token === match.token).find(m=>true);
-        let matchArbre : Match;
-        if (!matchPoule) {
-            if (this.tournament.arbre.match1.token === match.token) {
-                matchArbre = this.tournament.arbre.match1;
-                let index = this.tournament.poule.matchs.indexOf(matchArbre);
-                this.tournament.arbre.match1 = matchArbre;
-            }else if (this.tournament.arbre.match2.token === match.token) {
-                matchArbre = this.tournament.arbre.match2;
-                let index = this.tournament.poule.matchs.indexOf(matchArbre);
-                this.tournament.arbre.match2 = matchArbre;
-            }else if (this.tournament.arbre.match3.token === match.token) {
-                matchArbre = this.tournament.arbre.match3;
-                let index = this.tournament.poule.matchs.indexOf(matchArbre);
-                this.tournament.arbre.match3 = matchArbre;
-            }
-        }else{
-            let index = this.tournament.poule.matchs.indexOf(matchPoule);
-            this.tournament.poule.matchs[index] = this.selectedMatch;
-        }
-    }
-
-    getMatchWinner(match : Match) : Team{
-        if(match.scoreTeam1Player1 + match.scoreTeam1Player2 > match.scoreTeam2Player1 + match.scoreTeam2Player2)
-            return match.team1;
-        else if (match.scoreTeam1Player1 + match.scoreTeam1Player2 < match.scoreTeam2Player1 + match.scoreTeam2Player2) {
-            return match.team2;
-        }
-            return null;
+    putMatch(match: Match)
+    {
+        let match_before : Match =  this.tournament.matches.filter(m => m.token === match.token)[0];
+        let index = this.tournament.matches.indexOf(match_before);
+        this.tournament.matches[index] = this.selectedMatch;
     }
 
     sortPoule() {
-        this.tournament.poule.teams = this.tournament.poule.teams.sort((n1, n2) => {
-            if (n1.point > n2.point) return -1;
-            if (n1.point < n2.point) return 1;
+        this.tournament.teams = this.tournament.teams.sort((n1, n2) => {
+            if (n1.points > n2.points) return -1;
+            if (n1.points < n2.points) return 1;
             return 0;
         });
     }
 
-    timesUp(event) { 
-        if (event.action == "done") { 
+    timesUp(event)
+    { 
+        if (event.action == "done")
+        { 
             this.finish();
         }
-     }
+    }
 
-     finish(){
+    finish()
+    {
         this.confirmationService.confirm({
             message: 'Are you sure that you want to finish the match',
             header: 'Confirmation',
             icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.selectedMatch.finish=true;
+            accept: () =>
+            {
+                this.selectedMatch.state = "Ended";
                 this.compute();
                 //put tournament
-                this.router.navigate(["/tournament", this.tournament.token], { state: {tournament: this.tournament}});
+                this.router.navigate(["/tournaments", this.tournament.token], { state: {tournament: this.tournament}});
             },
-            reject: () => {
-                this.selectedMatch.finish = false;
+            reject: () =>
+            {
+                this.selectedMatch.state = "InProgress";
                 this.updateScore=true;
             }
         });
      }
 
-     compute(){
-        if (this.checkIfMatchInPoule(this.selectedMatch)) {
-            let team1 : Team = this.tournament.poule.teams.filter(t => t.player1.pseudo === this.selectedMatch.team1.player1.pseudo).find(t=>true);
-            let team2 : Team = this.tournament.poule.teams.filter(t => t.player1.pseudo === this.selectedMatch.team2.player1.pseudo).find(t=>true);
-            let indexTeam1 = this.tournament.poule.teams.indexOf(team1);
-            let indexTeam2 = this.tournament.poule.teams.indexOf(team2);
-            if (this.getMatchWinner(this.selectedMatch) == this.selectedMatch.team1) {
-                this.tournament.poule.teams[indexTeam1].point = this.tournament.poule.teams[indexTeam1].point + 3;
-                this.tournament.poule.teams[indexTeam2].point = this.tournament.poule.teams[indexTeam2].point + 1;
-            }else if (this.getMatchWinner(this.selectedMatch) == this.selectedMatch.team2) {
-                this.tournament.poule.teams[indexTeam1].point = this.tournament.poule.teams[indexTeam1].point + 1;
-                this.tournament.poule.teams[indexTeam2].point = this.tournament.poule.teams[indexTeam2].point + 3;
-            }else{
-                this.tournament.poule.teams[indexTeam1].point = this.tournament.poule.teams[indexTeam1].point + 2;
-                this.tournament.poule.teams[indexTeam2].point = this.tournament.poule.teams[indexTeam2].point + 2;
+    compute()
+    {
+        if (this.selectedMatch.stage === "Pool")
+        {
+            let team1: TournamentTeam = getTeam(this.selectedMatch.teams[0], this.tournament.teams);
+            let team2: TournamentTeam = getTeam(this.selectedMatch.teams[1], this.tournament.teams);
+            let indexTeam1 = this.tournament.teams.indexOf(team1);
+            let indexTeam2 = this.tournament.teams.indexOf(team2);
+            let winner_team = getWinnerTeam(this.selectedMatch);
+            if (winner_team == this.selectedMatch.teams[0])
+            {
+                this.tournament.teams[indexTeam1].points = this.tournament.teams[indexTeam1].points + 3;
+                this.tournament.teams[indexTeam2].points = this.tournament.teams[indexTeam2].points + 1;
+            }
+            else if (winner_team == this.selectedMatch.teams[1])
+            {
+                this.tournament.teams[indexTeam1].points = this.tournament.teams[indexTeam1].points + 1;
+                this.tournament.teams[indexTeam2].points = this.tournament.teams[indexTeam2].points + 3;
+            }
+            else
+            {
+                this.tournament.teams[indexTeam1].points = this.tournament.teams[indexTeam1].points + 2;
+                this.tournament.teams[indexTeam2].points = this.tournament.teams[indexTeam2].points + 2;
             }
 
-            if(this.checkIfFinishPoule){
+            if (this.checkIfFinishPoule)
+            {
                 this.sortPoule();
-                this.tournament.arbre.match1.team1 = this.tournament.poule.teams[0];
-                this.tournament.arbre.match1.team2 = this.tournament.poule.teams[2];
-                this.tournament.arbre.match2.team1 = this.tournament.poule.teams[1];
-                this.tournament.arbre.match2.team2 = this.tournament.poule.teams[3];
+                let semifinal1: Match =
+                {
+                    token: Date.now() + "" + 1,
+                    start: null,
+                    order: 1,
+                    state: "NotStarted",
+                    stage: "Semifinal",
+                    elapsed: 0,
+                    teams: [toMatchTeam(this.tournament.teams[0]), toMatchTeam(this.tournament.teams[2])]
+                };
+                let semifinal2: Match =
+                {
+                    token: Date.now() + "" + 2,
+                    start: null,
+                    order: 2,
+                    state: "NotStarted",
+                    stage: "Semifinal",
+                    elapsed: 0,
+                    teams: [toMatchTeam(this.tournament.teams[0]), toMatchTeam(this.tournament.teams[2])]
+                };
+                this.tournament.matches.push(semifinal1);
+                this.tournament.matches.push(semifinal2);
+
+                /*
+                this.sortPoule();
+                this.tournament.semifinal1.team1 = this.tournament.teams[0];
+                this.tournament.semifinal1.team2 = this.tournament.teams[2];
+                this.tournament.semifinal2.team1 = this.tournament.teams[1];
+                this.tournament.semifinal2.team2 = this.tournament.teams[3];*/
             }
-        }else{
-            if(this.checkIfFinishSemiFinal){
-                this.tournament.arbre.match3.team1 = this.getMatchWinner(this.tournament.arbre.match1);
-                this.tournament.arbre.match3.team2 = this.getMatchWinner(this.tournament.arbre.match2);
-            }
+        }
+        else if (this.selectedMatch.stage === "Semifinal")
+        {
+            let winners: MatchTeam[] = [
+                getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1)),
+                getWinnerTeam(getSemifinalMatch(this.tournament.matches, 2))]
+            let winner1 = getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1));
+            let final: Match =
+            {
+                token: Date.now() + "" + 0,
+                start: null,
+                order: 0,
+                state: "NotStarted",
+                stage: "Final",
+                elapsed: 0,
+                teams: [newMatchTeam(winners[0]), newMatchTeam(winners[1])]
+            };
+            this.tournament.matches.push(final);
         }
      }
 

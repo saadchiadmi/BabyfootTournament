@@ -55,8 +55,8 @@ namespace babyfoot.Models
 
             model.Entity<Match>()       .HasOne(t => t.Tournament).WithMany(t => t.Matches)     .HasForeignKey(t => t.TournamentId).IsRequired();
 
-            //model.Entity<Team>().Ignore(t => t.Player1);
-            //model.Entity<Team>().Ignore(t => t.Player2);
+            //model.Entity<Team>().Ignore(t => t.players[0]);
+            //model.Entity<Team>().Ignore(t => t.players[1]);
             //model.Entity<Team>().Ignore(t => t.Players);
 
             //model.Entity<Match>().Ignore(t => t.Team1);

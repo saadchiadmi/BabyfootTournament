@@ -34,7 +34,7 @@ namespace babyfoot.Controllers
             return players;
         }
 
-        // GET: api/Players/pseudo
+        // GET: api/Players/{pseudo}
         [HttpGet("{pseudo}")]
         public async Task<ActionResult<PlayerView>> GetPlayer(String pseudo)
         {
@@ -49,19 +49,19 @@ namespace babyfoot.Controllers
             return info;
         }
 
-        // POST: api/Players/Add
-        [HttpPost("Add")]
-        public async Task<ActionResult<PlayerView>> PostPlayer(PlayerView view)
+        // POST: api/Players
+        [HttpPost]
+        public async Task<ActionResult<PlayerView>> PostPlayer(NewPlayerView view)
         {
-            if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)) || view.Goals != 0 || view.Champions != 0)
+            if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)))
                 return BadRequest();
 
             var player = new Player
             {
                 Pseudo = view.Pseudo,
                 Score = view.Score,
-                Goals = view.Goals,
-                Champions = view.Champions
+                Goals = 0,
+                Champions = 0
             };
 
             context.Add(player);
@@ -69,6 +69,35 @@ namespace babyfoot.Controllers
             await context.SaveChangesAsync();
 
             var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
+
+            return action;
+        }
+
+        // POST: api/Players
+        [HttpPost("many")]
+        public async Task<ActionResult<PlayerView>> PostPlayers(List<NewPlayerView> view)
+        {
+            if (context.Players.Any(t => view.Select(t => t.Pseudo).Any(p => p.Equals(t.Pseudo))))
+                return BadRequest();
+            if (!(view.Select(t => t.Pseudo).Distinct().Count() == view.Count()))
+                return BadRequest();
+
+            foreach (NewPlayerView pview in view)
+            {
+                var player = new Player
+                {
+                    Pseudo = pview.Pseudo,
+                    Score = pview.Score,
+                    Goals = 0,
+                    Champions = 0
+                };
+
+                context.Add(player);
+            }
+
+            await context.SaveChangesAsync();
+
+            var action = CreatedAtAction("PostPlayers", null, view);
 
             return action;
         }

@@ -15,11 +15,8 @@ namespace babyfoot.Models
     };
     public enum MatchStage
     {
-        [EnumMember(Value = "poule")]
         Pool,
-        [EnumMember(Value = "semifinal")]
         Semifinal,
-        [EnumMember(Value = "final")]
         Final
     };
 
