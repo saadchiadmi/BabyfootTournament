@@ -236,6 +236,79 @@ namespace babyfoot.Views
             return match;
         }
 
+        public Match Create(MatchView view, String tournament_token)
+        {
+            var match = new Match
+            {
+                Token = view.Token,
+                Order = view.Order,
+                Stage = view.Stage,
+                State = view.State,
+                ElapsedSeconds = view.ElapsedSeconds,
+                StartDate = view.StartDate
+            };
+
+            match.Tournament = context.Tournaments.First(t => t.Token.Equals(tournament_token));
+            match.TeamsOfMatch = new List<MatchTeam>();
+            match.GoalsOfMatch = new List<PlayerGoal>();
+
+            // save (create match id and set tournament id)
+            context.Add(match);
+            context.SaveChanges();
+
+
+            // get pseudos of view
+            var pseudos = new List<String>(view.Teams.SelectMany(t => t).Select(t => t.Pseudo));
+
+            // get players and teams views
+            var (vt1, vt2) = (view.Teams[0], view.Teams[1]);
+            var (vp1, vp2) = (vt1[0], vt1[1]);
+            var (vp3, vp4) = (vt2[0], vt2[1]);
+
+            // get team-players
+            var team_players_query = context.TeamPlayers
+                .Include(t => t.Team)
+                .Include(t => t.Player)
+                .Where(t => pseudos.Contains(t.Player.Pseudo));
+
+            var team_players = new List<PlayerTeam>(team_players_query);
+
+
+            // get players in bijection with the view
+            var (tp1, tp2) = (team_players.First(t => t.Player.Pseudo.Equals(vp1.Pseudo)), team_players.First(t => t.Player.Pseudo.Equals(vp2.Pseudo)));
+            var (tp3, tp4) = (team_players.First(t => t.Player.Pseudo.Equals(vp3.Pseudo)), team_players.First(t => t.Player.Pseudo.Equals(vp4.Pseudo)));
+
+            var (t1, t2) = (tp1.Team, tp3.Team);
+            var (p1, p2) = (tp1.Player, tp2.Player);
+            var (p3, p4) = (tp3.Player, tp4.Player);
+
+            // set team points
+            //t1.Points = vt1.Points;
+            //t2.Points = vt2.Points;
+
+            // set goals of match
+            match.GoalsOfMatch = new List<PlayerGoal>
+            {
+                new PlayerGoal { Match = match, Player = p1, Goals = vp1.Goals },
+                new PlayerGoal { Match = match, Player = p2, Goals = vp2.Goals },
+                new PlayerGoal { Match = match, Player = p3, Goals = vp3.Goals },
+                new PlayerGoal { Match = match, Player = p4, Goals = vp4.Goals }
+            };
+
+            // set teams of match
+            match.TeamsOfMatch = new List<MatchTeam>
+            {
+                new MatchTeam { Match = match, Team = t1 },
+                new MatchTeam { Match = match, Team = t2 }
+            };
+
+            // save
+            context.Entry(match).State = EntityState.Modified;
+            context.SaveChanges();
+
+            return match;
+        }
+
         public bool CheckState(MatchView view, Match entity)
         {
             if (!(entity.Stage.Equals(view.Stage)))
@@ -423,7 +496,7 @@ namespace babyfoot.Views
             context.SaveChanges();
 
             // set matches
-            tournament.Matches = new List<Match>(view.Matches.Select(t => CreateAsync(t, tournament.Token).Result));
+            tournament.Matches = new List<Match>(view.Matches.Select(t => Create(t, tournament.Token)));
 
             // save
             context.Entry(tournament).State = EntityState.Modified;
