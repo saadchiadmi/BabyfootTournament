@@ -20,7 +20,6 @@ export class OneTournamentComponent implements OnInit
     id: string;
     tournament: Tournament;
     tree: Match[];
-    //poule = {} as Pool;
     checkFinishPoule : boolean = false;
     checkFinishSemiFinal : boolean = false;
     checkFinishSemiFinal1: boolean = false;
@@ -53,11 +52,11 @@ export class OneTournamentComponent implements OnInit
         }
         this.sortPoule();
         console.log(this.tournament);
-        console.log(this.sortedPoolMatches);
-        this.checkFinishPoule = this.tournament.matches.filter(m => m.state === "Ended" == true).length == this.tournament.matches.length ? true : false;
+        console.log(this.tree);
+        this.checkFinishPoule = this.tournament.matches.filter(m => m.stage === "Pool").filter(m => m.state === "Ended").length == this.tournament.matches.filter(m => m.stage === "Pool").length ? true : false;
         this.checkFinishSemiFinal1 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") ? true : false;
         this.checkFinishSemiFinal2 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
-        this.checkFinishSemiFinal = (this.checkFinishSemiFinal1) && (this.checkFinishSemiFinal2);
+        this.checkFinishSemiFinal = (this.checkFinishSemiFinal1) && (this.checkFinishSemiFinal2) ? true : false;
         this.show = true;
     }
 
@@ -98,9 +97,9 @@ export class OneTournamentComponent implements OnInit
             return 0;
         });
         this.tree = [
-            getFinalMatch(this.tournament.matches),
-            getSemifinalMatch(this.tournament.matches, 1),
-            getSemifinalMatch(this.tournament.matches, 2)];
+            this.tournament.matches.filter(m => m.stage == "Final")[0],
+            this.tournament.matches.filter(m => m.stage == "Semifinal")[0],
+            this.tournament.matches.filter(m => m.stage == "Semifinal")[1]];
     }
     
     

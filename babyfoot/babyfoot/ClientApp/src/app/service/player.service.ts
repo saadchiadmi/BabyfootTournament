@@ -25,7 +25,7 @@ export class PlayerService {
 
     URI: string = "https://localhost:44324/";
     getPlayers(): Observable<Player[]> {
-        return this.http.get<Player[]>(this.baseUrl + "api/players");
+        return this.http.get<Player[]>(this.URI + "api/players");
     }
 
     savePlayer(player: Player): Observable<Player> {

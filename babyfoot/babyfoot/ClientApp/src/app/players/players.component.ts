@@ -56,7 +56,6 @@ export class PlayersComponent implements OnInit {
     }
 
     search(pseudo) {
-        //this.pseudo = pseudo;
         this.playerservice.getPlayers().subscribe(players => this.players = players.filter(p => p.pseudo.match(pseudo)));
     }
 
