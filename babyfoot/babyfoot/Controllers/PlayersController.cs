@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using babyfoot.Models;
 using babyfoot.Views;
+using System.Transactions;
 
 namespace babyfoot.Controllers
 {
@@ -56,7 +57,7 @@ namespace babyfoot.Controllers
             if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)))
                 return BadRequest();
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 var player = new Player
                 {
@@ -69,7 +70,7 @@ namespace babyfoot.Controllers
                 context.Add(player);
 
                 await context.SaveChangesAsync();
-                transaction.Commit();
+                scope.Complete();
             }
 
             var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
@@ -87,7 +88,7 @@ namespace babyfoot.Controllers
                 return BadRequest();
 
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 foreach (NewPlayerView pview in view)
                 {
@@ -104,7 +105,7 @@ namespace babyfoot.Controllers
 
                 await context.SaveChangesAsync();
 
-                transaction.Commit();
+                scope.Complete();
             }
 
             var action = CreatedAtAction("PostPlayers", null, view);

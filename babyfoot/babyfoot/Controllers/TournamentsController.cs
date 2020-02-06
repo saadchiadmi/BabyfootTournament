@@ -12,6 +12,7 @@ using babyfoot.Views;
 using babyfoot.Elo;
 using static babyfoot.Elo.PlayerPerformanceCalculator;
 using System.Diagnostics;
+using System.Transactions;
 
 namespace babyfoot.Controllers
 {
@@ -78,10 +79,10 @@ namespace babyfoot.Controllers
             if (!token.Equals(view.Token))
                 return BadRequest();
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 var tournament = webInterface.ModifyAsync(view).Result;
-                transaction.Commit();
+                scope.Complete();
             }
 
             return NoContent();
@@ -107,7 +108,7 @@ namespace babyfoot.Controllers
             if (!(tournament.State == TournamentState.Final || tournament.State == TournamentState.Ended))
                 return BadRequest();
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 tournament.State = TournamentState.Ended;
                 var teams = new List<Team>(tournament.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => t.Team));
@@ -195,7 +196,7 @@ namespace babyfoot.Controllers
                 }
 
                 await context.SaveChangesAsync();
-                transaction.Commit();
+                scope.Complete();
             }
 
             return NoContent();
@@ -219,10 +220,10 @@ namespace babyfoot.Controllers
             if (context.Tournaments.Any(t => t.Token.Equals(view.Token)))
                 return BadRequest();
 
-            using(var transaction = context.Database.BeginTransaction())
+            using(var scope = new TransactionScope())
             {
                 var tournament = webInterface.Create(view);
-                transaction.Commit();
+                scope.Complete();
             }
 
             return NoContent();
