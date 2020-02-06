@@ -25,11 +25,8 @@ export class TournamentComponent implements OnInit {
     constructor(private tournamentservice: TournamentService, private teamservice: TeamService) { }
 
     ngOnInit() {
-        this.tournamentservice.getTournament().subscribe(tournament => this.tournaments = tournament.filter(t => t.state === "Ended"));
-        this.teamservice.getTeamById(1).subscribe(res => {
-            this.team = res;
-            console.log(this.team);
-        });
+        this.tournamentservice.getTournament().subscribe(tournament =>
+            this.tournaments = tournament/*.filter(t => t.state === "Ended")*/);
         
       this.sortOptions = [
           {label: 'Old to new', value: 'date'},

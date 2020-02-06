@@ -1,4 +1,5 @@
 import { MatchTeam, getScore } from './MatchTeam';
+import { MatchPlayer } from './MatchPlayer';
 
 export interface Match
 {
@@ -8,7 +9,7 @@ export interface Match
     state: string;
     start : Date;
     elapsed: number;
-    teams: MatchTeam[];
+    teams: MatchPlayer[][];
 }
 
 export function getMatch(matches: Match[], stage: string, order: number): Match {
@@ -27,7 +28,7 @@ export function getPoolMatch(matches: Match[], order: number): Match {
     return getMatch(matches, "Pool", order);
 }
 
-export function getWinnerTeam(match: Match): MatchTeam
+export function getWinnerTeam(match: Match): MatchPlayer[]
 {
     let score1 = getScore(match.teams[0]);
     let score2 = getScore(match.teams[1]);

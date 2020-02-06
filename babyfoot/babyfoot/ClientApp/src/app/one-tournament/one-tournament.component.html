@@ -1,151 +1,146 @@
-<!-- <div class="card shadow-sm" (click)="displayTeams($event)">
-  <div class="card-body text-center">
-    <h5 class="card-title text-view">Display all teams</h5>
-    <p-organizationChart [value]="arbre" selectionMode="single"></p-organizationChart>
-  </div>
-</div>
-<br> -->
-<div class="card shadow-sm" *ngIf="checkFinishSemiFinal">
-  <div class="card-body">
-    <h5 class="card-title text-center text-view">Final</h5>
-    <div class="row text-center pointer" (click)="selectMatch($event, tree[0])">
-      <div class="col">
-        {{tree[0].teams[0].players[0].pseudo}} - {{tree[0].teams[0].players[1].pseudo}}
-      </div>
-      <div class="col" *ngIf="tree[0].finish">
-        {{tree[0].teams[0].players[0].goals + tree[0].teams[0].players[1].goals}} - 
-        {{tree[0].teams[1].players[0].goals + tree[0].teams[1].players[1].goals}}
-      </div>
-      <div class="col" *ngIf="!tree[0].finish">
-        -
-      </div>
-      <div class="col">
-        {{tree[0].teams[1].players[0].pseudo}} - {{tree[0].teams[1].players[1].pseudo}}
-      </div>
+<div *ngIf="show">
+    <div class="card shadow-sm" *ngIf="checkFinishPoule">
+        <div class="card-body">
+            <h5 class="card-title text-center text-info">Final</h5>
+            <div class="row text-center pointer" (click)="selectMatch($event, tree[0])">
+                <div class="col">
+                    {{tree[0].teams[0].players[0].pseudo}} - {{tree[0].teams[0].players[1].pseudo}}
+                </div>
+                <div class="col" *ngIf="tree[0].state=='Ended'">
+                    {{tree[0].teams[0].players[0].goals + tree[0].teams[0].players[1].goals}} -
+                    {{tree[0].teams[1].players[0].goals + tree[0].teams[1].players[1].goals}}
+                </div>
+                <div class="col" *ngIf="!tree[0].state=='Ended'">
+                    -
+                </div>
+                <div class="col">
+                    {{tree[0].teams[1].players[0].pseudo}} - {{tree[0].teams[1].players[1].pseudo}}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-<br>
-<div class="card shadow-sm" *ngIf="checkFinishPoule">
-  <div class="card-body">
-    <h6 class="card-title text-center text-view">Semi-final</h6>
-    <div class="row text-center pointer" (click)="selectMatch($event, tree[1])">
-      <div class="col">
-        {{tree[1].teams[0].players[0].pseudo}} - {{tree[1].teams[0].players[1].pseudo}}
-      </div>
-      <div class="col" *ngIf="tree[1].finish">
-        {{tree[1].teams[0].players[0].goals + tree[1].teams[0].players[1].goals}} - 
-        {{tree[1].teams[1].players[0].goals + tree[1].teams[1].players[1].goals}}
-      </div>
-      <div class="col" *ngIf="!tree[1].finish">
-        -
-      </div>
-      <div class="col">
-        {{tree[1].teams[1].players[0].pseudo}} - {{tree[1].teams[1].players[1].pseudo}}
-      </div>
+    <br>
+    <div class="card shadow-sm" *ngIf="checkFinishPoule">
+        <div class="card-body">
+            <h6 class="card-title text-center text-info">Semi-final</h6>
+            <div class="row text-center pointer" (click)="selectMatch($event, tree[1])">
+                <div class="col">
+                    {{tree[1].teams[0].players[0].pseudo}} - {{tree[1].teams[0].players[1].pseudo}}
+                </div>
+                <div class="col" *ngIf="tree[1].state=='Ended'">
+                    {{tree[1].teams[0].players[0].goals + tree[1].teams[0].players[1].goals}} -
+                    {{tree[1].teams[1].players[0].goals + tree[1].teams[1].players[1].goals}}
+                </div>
+                <div class="col" *ngIf="!tree[1].state=='Ended'">
+                    -
+                </div>
+                <div class="col">
+                    {{tree[1].teams[1].players[0].pseudo}} - {{tree[1].teams[1].players[1].pseudo}}
+                </div>
+            </div>
+            <hr>
+            <div class="row text-center pointer" (click)="selectMatch($event, tree[2])">
+                <div class="col">
+                    {{tree[2].teams[0].players[0].pseudo}} - {{tree[2].teams[0].players[1].pseudo}}
+                </div>
+                <div class="col" *ngIf="tree[2].state=='Ended'">
+                    {{tree[2].teams[0].players[0].goals + tree[2].teams[0].players[1].goals}} -
+                    {{tree[2].teams[1].players[0].goals + tree[2].teams[1].players[1].goals}}
+                </div>
+                <div class="col" *ngIf="!tree[2].state=='Ended'">
+                    -
+                </div>
+                <div class="col">
+                    {{tree[2].teams[1].players[0].pseudo}} - {{tree[2].teams[1].players[1].pseudo}}
+                </div>
+            </div>
+        </div>
     </div>
-    <hr>
-    <div class="row text-center pointer" (click)="selectMatch($event, tree[2])">
-        <div class="col">
-            {{tree[2].teams[0].players[0].pseudo}} - {{tree[2].teams[0].players[1].pseudo}}
+    <br>
+    <div class="card shadow-sm" *ngIf="sortedPoolTeams">
+        <div class="card-body">
+            <h6 class="card-title text-center text-info">Groupe</h6>
+            <div class="row">
+                <div class="col-1">
+
+                </div>
+                <div class="col">
+                    Team
+                </div>
+                <div class="col text-center">
+                    Point
+                </div>
+            </div>
+            <div *ngFor="let team of sortedPoolTeams; let i = index">
+                <hr>
+                <div class="row">
+                    <div class="col-1">
+                        {{i+1}}
+                    </div>
+                    <div class="col">
+                        {{team.pseudos[0]}} - {{team.pseudos[1]}}
+                    </div>
+                    <div class="col text-center">
+                        {{team.points}}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col" *ngIf="tree[2].finish">
-            {{tree[2].teams[0].players[0].goals + tree[2].teams[0].players[1].goals}} -
-            {{tree[2].teams[1].players[0].goals + tree[2].teams[1].players[1].goals}}
-        </div>
-      <div class="col" *ngIf="!tree[2].finish">
-        -
-      </div>
-      <div class="col">
-        {{tree[2].teams[1].players[0].pseudo}} - {{tree[2].teams[1].players[1].pseudo}}
-      </div>
     </div>
-  </div>
-</div>
-<br>
-<div class="card shadow-sm" *ngIf="tournament">
-  <div class="card-body">
-    <h6 class="card-title text-center text-view">Groupe</h6>
-    <div class="row">
-      <div class="col-1">
-        
-      </div>
-      <div class="col">
-        Team
-      </div>
-      <div class="col text-center">
-        Point
-      </div>
+    <br>
+    <div class="card shadow-sm" *ngIf="sortedPoolMatches">
+        <div class="card-body">
+            <h6 class="card-title text-center text-info">Match</h6>
+            <div *ngFor="let match of sortedPoolMatches; let i = index">
+                <hr *ngIf="i!=0">
+                <div class="row text-center pointer" (click)="selectMatch($event, match)">
+                    <div class="col">
+                        {{match.teams[0][0].pseudo}} - {{match.teams[0][1].pseudo}}
+                    </div>
+                    <div class="col" *ngIf="match.state=='Ended'">
+                        {{match.teams[0][0].goals + match.teams[0][1].goals}} -
+                        {{match.teams[1][0].goals + match.teams[1][1].goals}}
+                    </div>
+                    <div class="col" *ngIf="!match.state=='Ended'">
+                        -
+                    </div>
+                    <div class="col">
+                        {{match.teams[1][0].pseudo}} - {{match.teams[1][1].pseudo}}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div  *ngFor="let team of sortedTeamPoule; let i = index"> 
-      <hr>
-      <div class="row">
-        <div class="col-1">
-          {{i+1}}
-        </div>
-        <div class="col">
-          {{team.pseudos[0]}} - {{team.pseudos[1]}}
-        </div>
-        <div class="col text-center">
-          {{team.points}}
-        </div>
-      </div>
-  </div>
-  </div>
-</div>
-<br>
-<div class="card shadow-sm" *ngIf="tournament">
-  <div class="card-body">
-    <h6 class="card-title text-center text-view">Match</h6>
-    <div  *ngFor="let match of sortedMatchPoule; let i = index"> 
-      <hr *ngIf="i!=0">
-      <div class="row text-center pointer" (click)="selectMatch($event, match)">
-        <div class="col">
-            {{match.teams[0].players[0].pseudo}} - {{match.teams[0].players[1].pseudo}}
-        </div>
-        <div class="col" *ngIf="match.finish">
-            {{match.teams[0].players[0].goals + match.teams[0].players[1].goals}} -
-            {{match.teams[1].players[0].goals + match.teams[1].players[1].goals}}
-        </div>
-        <div class="col" *ngIf="!match.finish">
-          -
-        </div>
-        <div class="col">
-            {{match.teams[1].players[0].pseudo}} - {{match.teams[1].players[1].pseudo}}
-        </div>
-      </div>
-  </div>
-  </div>
 </div>
 <p-dialog header="Match" [(visible)]="displayDialog" appendTo="body" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '225px'}" (onAfterHide)="onDialogHide()">
     <div class="ui-g-12 ui-g-nopad text-center" *ngIf="selectedMatch">
         <div class="ui-g-6">
-          <div class="row">
-              <div class="col">{{selectedMatch.teams[0].players[0].pseudo}}</div>
-              <div class="col">{{selectedMatch.teams[0].players[0].goals}}</div>
-          </div>
+            <div class="row">
+                <div class="col">{{selectedMatch.teams[0][0].pseudo}}</div>
+                <div class="col">{{selectedMatch.teams[0][0].goals}}</div>
+            </div>
         </div>
         <div class="ui-g-6">
-          <div class="row">
-              <div class="col">{{selectedMatch.teams[1].players[0].goals}}</div>
-              <div class="col">{{selectedMatch.teams[1].players[0].pseudo}}</div>
-          </div>
+            <div class="row">
+                <div class="col">{{selectedMatch.teams[0][1].goals}}</div>
+                <div class="col">{{selectedMatch.teams[0][1].pseudo}}</div>
+            </div>
         </div>
         <div class="ui-g-6">
-          <div class="row">
-              <div class="col">{{selectedMatch.teams[0].players[1].pseudo}}</div>
-              <div class="col">{{selectedMatch.teams[0].players[1].goals}}</div>
-          </div>
+            <div class="row">
+                <div class="col">{{selectedMatch.teams[1][0].pseudo}}</div>
+                <div class="col">{{selectedMatch.teams[1][0].goals}}</div>
+            </div>
         </div>
         <div class="ui-g-6">
-          <div class="row">
-              <div class="col">{{selectedMatch.teams[1].players[1].goals}}</div>
-              <div class="col">{{selectedMatch.teams[1].players[1].pseudo}}</div>
-          </div>
-          </div>
+            <div class="row">
+                <div class="col">{{selectedMatch.teams[1][1].goals}}</div>
+                <div class="col">{{selectedMatch.teams[1][1].pseudo}}</div>
+            </div>
+        </div>
         <div class="ui-g-12">
-            {{selectedMatch.teams[0].players[0].goals + match.teams[0].players[1].goals}} -
-            {{selectedMatch.teams[1].players[0].goals + match.teams[1].players[1].goals}}
+            {{selectedMatch.teams[0][0].goals + selectedMatch.teams[0][1].goals}} -
+            {{selectedMatch.teams[1][0].goals + selectedMatch.teams[1][1].goals}}
         </div>
     </div>
 </p-dialog>

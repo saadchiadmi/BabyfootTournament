@@ -6,6 +6,7 @@ import { TournamentService } from '../service/tournament.service';
 import { TournamentTeam } from '../entities/TournamentTeam';
 import { Match, getFinalMatch, getSemifinalMatch, getPoolMatch } from '../entities/Match';
 import { TeamService } from '../service/team.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-one-tournament',
@@ -22,7 +23,10 @@ export class OneTournamentComponent implements OnInit
     //poule = {} as Pool;
     checkFinishPoule : boolean = false;
     checkFinishSemiFinal : boolean = false;
+    checkFinishSemiFinal1: boolean = false;
+    checkFinishSemiFinal2: boolean = false;
     displayDialog: boolean;
+    show: boolean = false;
     selectedMatch: Match;
     sortedPoolTeams: TournamentTeam[];
     sortedPoolMatches: Match[];
@@ -36,21 +40,23 @@ export class OneTournamentComponent implements OnInit
             localStorage.setItem('tournament', JSON.stringify(this.tournament));
         else 
             this.tournament = JSON.parse(localStorage.getItem('tournament'));
-            if (!this.tournament)
-            {
+        if (!this.tournament)
+        {
             this.activatedRoute.params.subscribe(params =>
             {
                 this.id = params['id'];
-                this.tournamentService.getTournamentById(this.id).subscribe(res => this.tournament = res);
+            });
+            this.tournamentService.getTournamentById(this.id).subscribe(res => {
+                this.tournament = res;
+                    
             });
         }
         this.sortPoule();
-        this.tree = [
-            getFinalMatch(this.tournament.matches),
-            getSemifinalMatch(this.tournament.matches, 1),
-            getSemifinalMatch(this.tournament.matches, 2)];
-        this.checkFinishPoule = this.tournament.matches.filter(m => m.state === "Ended"==true).length == this.tournament.matches.length ? true : false;
-        this.checkFinishSemiFinal = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") && this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
+        this.checkFinishPoule = this.tournament.matches.filter(m => m.state === "Ended" == true).length == this.tournament.matches.length ? true : false;
+        this.checkFinishSemiFinal1 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") ? true : false;
+        this.checkFinishSemiFinal2 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
+        this.checkFinishSemiFinal = (this.checkFinishSemiFinal1) && (this.checkFinishSemiFinal2);
+        this.show = true;
     }
 
     selectMatch(event: Event, match: Match) {
@@ -77,13 +83,6 @@ export class OneTournamentComponent implements OnInit
         this.selectedMatch = null;
     }
 
-    /*defineArbre() {
-        this.arbre.semifinal1 = this.tournament.matches.filter(m => m.niveau == "demifinal")[0];
-        this.arbre.semifinal2 = this.tournament.matches.filter(m => m.niveau == "demifinal")[1];
-        this.final = this.tournament.matches.filter(m => m.niveau == "final")[0];
-        this.matchs = this.tournament.matches.filter(m => m.niveau == "poule");
-    }*/
-
     sortPoule() {
 
         this.sortedPoolTeams = this.tournament.teams.sort((n1, n2) => {
@@ -91,12 +90,15 @@ export class OneTournamentComponent implements OnInit
             if (n1.points < n2.points) return 1;
             return 0;
         });
-        this.sortedPoolMatches = this.tournament.matches.sort((n1, n2) =>
-        {
+        this.sortedPoolMatches = this.tournament.matches.sort((n1, n2) => {
             if (n1.order > n2.order) return 1;
             if (n1.order < n2.order) return -1;
             return 0;
         });
+        this.tree = [
+            getFinalMatch(this.tournament.matches),
+            getSemifinalMatch(this.tournament.matches, 1),
+            getSemifinalMatch(this.tournament.matches, 2)];
     }
     
     

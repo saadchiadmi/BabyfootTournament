@@ -24,13 +24,8 @@ export class MatchService {
         { pseudo: "antoinette", score: 30, goals: 20, champions: 2 },
         { pseudo: "valentin", score: 37, goals: 27, champions: 2 },
     ];
-    mteam1: MatchTeam = { players: [{ pseudo: this.players[0].pseudo, goals: 2 }, { pseudo: this.players[1].pseudo, goals: 3 }], points: 7 };
-    mteam2: MatchTeam = { players: [{ pseudo: this.players[2].pseudo, goals: 2 }, { pseudo: this.players[3].pseudo, goals: 3 }], points: 5 };
-    test_match: Match = { token: 'hellomatch', start: new Date(Date.now()), order: 1, teams: [this.mteam1, this.mteam2], state: "Ended", stage: "Pool", elapsed: 200 };
-    subject: BehaviorSubject<Match> = new BehaviorSubject(this.test_match);
-
+    URI: string = "https://localhost:44324/";
     getMatchById(id: string): Observable<Match> {
-        return this.subject.asObservable();
-        //return this.http.get<Match>(this.baseUrl + "api/players");
+        return this.http.get<Match>(this.URI + "api/matches"+id);
     }
 }

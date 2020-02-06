@@ -6,6 +6,7 @@ import {ConfirmationService} from 'primeng/api';
 import { Tournament } from '../entities/Tournament';
 import { TournamentTeam, getTeam, toMatchTeam } from '../entities/TournamentTeam';
 import { MatchTeam, getScore, newMatchTeam } from '../entities/MatchTeam';
+import { MatchPlayer } from '../entities/MatchPlayer';
 
 @Component({
   selector: 'app-match',
@@ -47,12 +48,12 @@ export class MatchComponent implements OnInit {
         let t1 = this.selectedMatch.teams[0];
         let t2 = this.selectedMatch.teams[1];
 
-        if (t1.players[0].goals + t1.players[1].goals == this.max_goals)
+        if (t1[0].goals + t1[1].goals == this.max_goals)
         {
             //put match
             this.selectedMatch.state = "Ended";
         }
-        else if (t2.players[0].goals + t2.players[1].goals == this.max_goals)
+        else if (t2[0].goals + t2[1].goals == this.max_goals)
         {
             //put match
             this.selectedMatch.state = "Ended";
@@ -205,7 +206,7 @@ export class MatchComponent implements OnInit {
         }
         else if (this.selectedMatch.stage === "Semifinal")
         {
-            let winners: MatchTeam[] = [
+            let winners: MatchPlayer[][] = [
                 getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1)),
                 getWinnerTeam(getSemifinalMatch(this.tournament.matches, 2))]
             let winner1 = getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1));
@@ -217,7 +218,7 @@ export class MatchComponent implements OnInit {
                 state: "NotStarted",
                 stage: "Final",
                 elapsed: 0,
-                teams: [newMatchTeam(winners[0]), newMatchTeam(winners[1])]
+                teams: [newMatchTeam(winners[0][0]), newMatchTeam(winners[0][1])]
             };
             this.tournament.matches.push(final);
         }
