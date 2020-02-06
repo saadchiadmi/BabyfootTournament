@@ -53,7 +53,7 @@ namespace babyfoot.Controllers
             if (!token.Equals(view.Token))
                 return BadRequest();
 
-            var match = await context.Matches.Where(t => t.Token.Equals(token))
+                var match = await context.Matches.Where(t => t.Token.Equals(token))
                 .Include(t => t.Tournament)
                 .Include(t => t.GoalsOfMatch)
                 .Include(t => t.TeamsOfMatch)
@@ -68,7 +68,12 @@ namespace babyfoot.Controllers
             if (!webInterface.CheckState(view, match))
                 return BadRequest();
 
-            await webInterface.ModifyAsync(view, match);
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                await webInterface.ModifyAsync(view, match);
+
+                transaction.Commit();
+            }
 
             return NoContent();
         }
@@ -92,12 +97,17 @@ namespace babyfoot.Controllers
             if (!(match.State == MatchState.Ended))
                 return BadRequest();
 
-            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[0].Pseudos[0]))).Team.Points = view[0].Points;
-            match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[1].Pseudos[0]))).Team.Points = view[1].Points;
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[0].Pseudos[0]))).Team.Points = view[0].Points;
+                match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[1].Pseudos[0]))).Team.Points = view[1].Points;
 
-            context.Entry(match).State = EntityState.Modified;
+                context.Entry(match).State = EntityState.Modified;
 
-            context.SaveChanges();
+                context.SaveChanges();
+
+                transaction.Commit();
+            }
 
             return NoContent();
         }

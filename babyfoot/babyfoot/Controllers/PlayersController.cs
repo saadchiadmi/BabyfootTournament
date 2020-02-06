@@ -56,17 +56,21 @@ namespace babyfoot.Controllers
             if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)))
                 return BadRequest();
 
-            var player = new Player
+            using (var transaction = context.Database.BeginTransaction())
             {
-                Pseudo = view.Pseudo,
-                Score = view.Score,
-                Goals = 0,
-                Champions = 0
-            };
+                var player = new Player
+                {
+                    Pseudo = view.Pseudo,
+                    Score = view.Score,
+                    Goals = 0,
+                    Champions = 0
+                };
 
-            context.Add(player);
+                context.Add(player);
 
-            await context.SaveChangesAsync();
+                await context.SaveChangesAsync();
+                transaction.Commit();
+            }
 
             var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
 
@@ -82,20 +86,26 @@ namespace babyfoot.Controllers
             if (!(view.Select(t => t.Pseudo).Distinct().Count() == view.Count()))
                 return BadRequest();
 
-            foreach (NewPlayerView pview in view)
+
+            using (var transaction = context.Database.BeginTransaction())
             {
-                var player = new Player
+                foreach (NewPlayerView pview in view)
                 {
-                    Pseudo = pview.Pseudo,
-                    Score = pview.Score,
-                    Goals = 0,
-                    Champions = 0
-                };
+                    var player = new Player
+                    {
+                        Pseudo = pview.Pseudo,
+                        Score = pview.Score,
+                        Goals = 0,
+                        Champions = 0
+                    };
 
-                context.Add(player);
+                    context.Add(player);
+                }
+
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
             }
-
-            await context.SaveChangesAsync();
 
             var action = CreatedAtAction("PostPlayers", null, view);
 
