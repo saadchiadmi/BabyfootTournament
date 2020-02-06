@@ -1,0 +1,30 @@
+{
+    "token": "b98kgdUG8"
+    "order": 3,
+    "stage": "Pool",
+    "state": "Ended",
+    "start": "2022-01-31T18:20:00",
+    "elapsed": 300,
+    "teams": [
+        [
+            {
+                "pseudo": "Thomas",
+                "goals": 2
+            },
+            {
+                "pseudo": "Saad",
+                "goals": 3
+            }
+        ],
+        [
+            {
+                "pseudo": "Matthieu",
+                "goals": 0
+            },
+            {
+                "pseudo": "Jean",
+                "goals": 0
+            }
+        ]
+    ]
+}

@@ -1,0 +1,217 @@
+{
+    "token": "2d99Abf1e8Cm4",
+    "date": "2022-01-31T00:00:00",
+    "state": "Semifinal",
+    "teams": [
+        {
+            "points": 9,
+            "pseudos": [
+                "Thomas",
+                "Saad"
+            ]
+        },
+        {
+            "points": 6,
+            "pseudos": [
+                "Paul",
+                "Pierre"
+            ]
+        },
+        {
+            "points": 3,
+            "pseudos": [
+                "Jacques",
+                "Philippe"
+            ]
+        },
+        {
+            "points": 0,
+            "pseudos": [
+                "Matthieu",
+                "Jean"
+            ]
+        }
+    ],
+    "matches": [
+        {
+            "token": "order1",
+            "order": 1,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:00:00",
+            "elapsed": 300,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Thomas",
+                        "goals": 2
+                    },
+                    {
+                        "pseudo": "Saad",
+                        "goals": 2
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Paul",
+                        "goals": 2
+                    },
+                    {
+                        "pseudo": "Pierre",
+                        "goals": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "token": "order2",
+            "order": 2,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:10:00",
+            "elapsed": 300,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Thomas",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Saad",
+                        "goals": 3
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Jacques",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Philippe",
+                        "goals": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "token": "order3",
+            "order": 3,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:20:00",
+            "elapsed": 300,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Thomas",
+                        "goals": 2
+                    },
+                    {
+                        "pseudo": "Saad",
+                        "goals": 3
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Matthieu",
+                        "goals": 0
+                    },
+                    {
+                        "pseudo": "Jean",
+                        "goals": 0
+                    }
+                ]
+            ]
+        },
+        {
+            "token": "order4",
+            "order": 4,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:30:00",
+            "elapsed": 260,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Paul",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Pierre",
+                        "goals": 2
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Jacques",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Philippe",
+                        "goals": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "token": "order5",
+            "order": 5,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:40:00",
+            "elapsed": 280,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Paul",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Pierre",
+                        "goals": 1
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Matthieu",
+                        "goals": 0
+                    },
+                    {
+                        "pseudo": "Jean",
+                        "goals": 0
+                    }
+                ]
+            ]
+        },
+        {
+            "token": "order6",
+            "order": 6,
+            "stage": "Pool",
+            "state": "Ended",
+            "start": "2022-01-31T18:50:00",
+            "elapsed": 150,
+            "teams": [
+                [
+                    {
+                        "pseudo": "Jacques",
+                        "goals": 1
+                    },
+                    {
+                        "pseudo": "Philippe",
+                        "goals": 1
+                    }
+                ],
+                [
+                    {
+                        "pseudo": "Matthieu",
+                        "goals": 0
+                    },
+                    {
+                        "pseudo": "Jean",
+                        "goals": 0
+                    }
+                ]
+            ]
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+[
+    {
+        "points": 17,
+        "pseudos": [
+            "Thomas",
+            "Saad"
+        ]
+    },
+    {
+        "points": 19,
+        "pseudos": [
+            "Paul",
+            "Pierre"
+        ]
+    }
+]
