@@ -437,7 +437,7 @@ namespace babyfoot.Views
             context.SaveChanges();
 
             // set matches
-            tournament.Matches = new List<Match>(view.Matches.Select(t => CreateAsync(t, tournament.Token).Result));
+            tournament.Matches = new List<Match>(view.Matches.Select(t => Create(t, tournament.Token)));
 
             // save
             context.Entry(tournament).State = EntityState.Modified;
