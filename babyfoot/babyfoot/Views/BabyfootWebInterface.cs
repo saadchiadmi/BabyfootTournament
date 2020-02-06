@@ -314,7 +314,7 @@ namespace babyfoot.Views
 
 
 
-        public async Task<Tournament> CreateAsync(TournamentView view)
+        public Tournament Create(TournamentView view)
         {
             // assume players in the view are known
 
@@ -329,7 +329,7 @@ namespace babyfoot.Views
 
             // save (create tournament id)
             context.Add(tournament);
-            await context.SaveChangesAsync();
+            context.SaveChanges();
 
             var vpseudos = view.Teams.SelectMany(t => t.Pseudos);
             var players = context.Players.Where(t => vpseudos.Contains(t.Pseudo));
@@ -344,7 +344,7 @@ namespace babyfoot.Views
             }
             
             // save (create team ids)
-            await context.SaveChangesAsync();
+            context.SaveChanges();
 
             // set team-players
             int i = 0;
@@ -361,7 +361,66 @@ namespace babyfoot.Views
                 ++i;
             }
             // save
-            await context.SaveChangesAsync();
+            context.SaveChanges();
+
+            // set matches
+            tournament.Matches = new List<Match>(view.Matches.Select(t => CreateAsync(t, tournament.Token).Result));
+
+            // save
+            context.Entry(tournament).State = EntityState.Modified;
+            context.SaveChanges();
+
+            return tournament;
+        }
+
+        public async Task<Tournament> CreateAsync(TournamentView view)
+        {
+            // assume players in the view are known
+
+            // add tournament id
+            var tournament = new Tournament
+            {
+                Token = view.Token,
+                State = view.State,
+                CreateDate = view.CreateDate,
+                Matches = new List<Match> { }
+            };
+
+            // save (create tournament id)
+            context.Add(tournament);
+            context.SaveChanges();
+
+            var vpseudos = view.Teams.SelectMany(t => t.Pseudos);
+            var players = context.Players.Where(t => vpseudos.Contains(t.Pseudo));
+
+            // set teams
+            var teams = new List<Team>();
+            foreach (var vteam in view.Teams)
+            {
+                var team = new Team { Points = vteam.Points };
+                context.Add(team);
+                teams.Add(team);
+            }
+
+            // save (create team ids)
+            context.SaveChanges();
+
+            // set team-players
+            int i = 0;
+            foreach (var vteam in view.Teams)
+            {
+                var team = teams[i];
+                foreach (var vpseudo in vteam.Pseudos)
+                {
+                    var player = players.First(t => t.Pseudo.Equals(vpseudo));
+                    var pt = new PlayerTeam { Player = player, Team = team };
+                    context.Add(pt);
+                }
+
+                ++i;
+            }
+            // save
+            context.SaveChanges();
 
             // set matches
             tournament.Matches = new List<Match>(view.Matches.Select(t => CreateAsync(t, tournament.Token).Result));
@@ -372,7 +431,6 @@ namespace babyfoot.Views
 
             return tournament;
         }
-
 
     }
 }

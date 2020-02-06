@@ -20,8 +20,6 @@ namespace babyfoot.Models
 
         protected override void OnModelCreating(ModelBuilder model)
         {
-
-
             model.Entity<Player>().Property(t => t.PlayerId).ValueGeneratedOnAdd();
             model.Entity<Team>().Property(t => t.TeamId).ValueGeneratedOnAdd();
             model.Entity<Match>().Property(t => t.MatchId).ValueGeneratedOnAdd();
@@ -54,34 +52,6 @@ namespace babyfoot.Models
             model.Entity<MatchTeam>()   .HasOne(t => t.Match)   .WithMany(t => t.TeamsOfMatch)  .HasForeignKey(t => t.MatchId)  .IsRequired();
 
             model.Entity<Match>()       .HasOne(t => t.Tournament).WithMany(t => t.Matches)     .HasForeignKey(t => t.TournamentId).IsRequired();
-
-            //model.Entity<Team>().Ignore(t => t.players[0]);
-            //model.Entity<Team>().Ignore(t => t.players[1]);
-            //model.Entity<Team>().Ignore(t => t.Players);
-
-            //model.Entity<Match>().Ignore(t => t.Team1);
-            //model.Entity<Match>().Ignore(t => t.Team2);
-            //model.Entity<Match>().Ignore(t => t.Teams);
-            //model.Entity<Match>().Ignore(t => t.Goals);
-
-            //model.Entity<Tournament>().Ignore(t => t.Teams);
-            //model.Entity<Tournament>().Ignore(t => t.Finish);
-
-
-            //model.Entity<Player>()      .Ignore(t => t.GoalsOfPlayer);
-            //model.Entity<Player>()      .Ignore(t => t.TeamsOfPlayer);
-            //model.Entity<Team>()        .Ignore(t => t.MatchesOfTeam);
-            //model.Entity<Team>()        .Ignore(t => t.PlayersOfTeam);
-            //model.Entity<Match>()       .Ignore(t => t.Tournament);
-            //model.Entity<Match>()       .Ignore(t => t.TeamsOfMatch);
-            //model.Entity<Match>()       .Ignore(t => t.GoalsOfMatch);
-
-            //model.Entity<PlayerTeam>()  .Ignore(t => t.Player);
-            //model.Entity<PlayerTeam>()  .Ignore(t => t.Team);
-
-            //model.Entity<PlayerTeam>().Property(t => new { t.PlayerId, t.TeamId }).ValueGeneratedOnAdd();
-            //model.Entity<PlayerGoal>().Property(t => new { t.PlayerId, t.MatchId }).ValueGeneratedOnAdd();
-            //model.Entity<MatchTeam>().Property(t => new { t.TeamId, t.MatchId }).ValueGeneratedOnAdd();
 
             base.OnModelCreating(model);
 
