@@ -78,7 +78,11 @@ namespace babyfoot.Controllers
             if (!token.Equals(view.Token))
                 return BadRequest();
 
-            var tournament = webInterface.ModifyAsync(view).Result;
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                var tournament = webInterface.ModifyAsync(view).Result;
+                transaction.Commit();
+            }
 
             return NoContent();
         }
@@ -103,92 +107,96 @@ namespace babyfoot.Controllers
             if (!(tournament.State == TournamentState.Final || tournament.State == TournamentState.Ended))
                 return BadRequest();
 
-            tournament.State = TournamentState.Ended;
-            var teams = new List<Team>(tournament.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => t.Team));
-
-            EloRater team_rater = new EloRater(new LogisticWinProbabilityCalculator(400 * 2, 10));
-            PlayerPerformanceCalculator player_perf_calc = new PlayerPerformanceCalculator(team_rater);
-
-            var matches = tournament.Matches;
-            double team_k_factor = 50;
-
-            var win_prob = team_rater.GetWinProbabilityCalculator();
-            var player_score_diffs = new Dictionary<int, double>();
-            var players = new List<Player>(teams.SelectMany(t => t.PlayersOfTeam.Select(t => t.Player)));
-
-            foreach (Player player in players)
-                player_score_diffs.Add(player.PlayerId, 0);
-
-
-            foreach (Match match in matches)
+            using (var transaction = context.Database.BeginTransaction())
             {
-                List<Team> match_teams = new List<Team>(match.TeamsOfMatch.Select(t => t.Team));
-                var (t1, t2) = (match_teams[0], match_teams[1]);
-                var (p1, p2) = (t1.PlayersOfTeam.ElementAt(0).Player, t1.PlayersOfTeam.ElementAt(1).Player);
-                var (p3, p4) = (t2.PlayersOfTeam.ElementAt(0).Player, t2.PlayersOfTeam.ElementAt(1).Player);
+                tournament.State = TournamentState.Ended;
+                var teams = new List<Team>(tournament.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => t.Team));
 
-                var match_players = new List<Player> { p1, p2, p3, p4 };
+                EloRater team_rater = new EloRater(new LogisticWinProbabilityCalculator(400 * 2, 10));
+                PlayerPerformanceCalculator player_perf_calc = new PlayerPerformanceCalculator(team_rater);
+
+                var matches = tournament.Matches;
+                double team_k_factor = 50;
+
+                var win_prob = team_rater.GetWinProbabilityCalculator();
+                var player_score_diffs = new Dictionary<int, double>();
+                var players = new List<Player>(teams.SelectMany(t => t.PlayersOfTeam.Select(t => t.Player)));
+
+                foreach (Player player in players)
+                    player_score_diffs.Add(player.PlayerId, 0);
 
 
-                double effected_t1;
-                if (t1.Points < t2.Points)
-                    effected_t1 = 0;
-                else if (t1.Points > t2.Points)
-                    effected_t1 = 1;
-                else
-                    effected_t1 = 0.5;
-
-
-                double score_t1 = p1.Score + p2.Score;
-                double score_t2 = p3.Score + p4.Score;
-                var diff_teams = new List<double>
+                foreach (Match match in matches)
                 {
-                    team_rater.Get(score_t1, score_t2, effected_t1, team_k_factor),
-                    team_rater.Get(score_t2, score_t1, 1 - effected_t1, team_k_factor)
-                };
+                    List<Team> match_teams = new List<Team>(match.TeamsOfMatch.Select(t => t.Team));
+                    var (t1, t2) = (match_teams[0], match_teams[1]);
+                    var (p1, p2) = (t1.PlayersOfTeam.ElementAt(0).Player, t1.PlayersOfTeam.ElementAt(1).Player);
+                    var (p3, p4) = (t2.PlayersOfTeam.ElementAt(0).Player, t2.PlayersOfTeam.ElementAt(1).Player);
 
-                var goals = new List<double>
-                {
-                    match.GoalsOfMatch.Where(t => t.PlayerId == p1.PlayerId).First().Goals,
-                    match.GoalsOfMatch.Where(t => t.PlayerId == p2.PlayerId).First().Goals,
-                    match.GoalsOfMatch.Where(t => t.PlayerId == p3.PlayerId).First().Goals,
-                    match.GoalsOfMatch.Where(t => t.PlayerId == p4.PlayerId).First().Goals
-                };
+                    var match_players = new List<Player> { p1, p2, p3, p4 };
 
-                var stats = new List<Stats>
-                {
-                    new Stats { goals = goals[0], score = p1.Score },
-                    new Stats { goals = goals[1], score = p2.Score },
-                    new Stats { goals = goals[2], score = p3.Score },
-                    new Stats { goals = goals[3], score = p4.Score }
-                };
-                var perfs = player_perf_calc.Get(stats);
+
+                    double effected_t1;
+                    if (t1.Points < t2.Points)
+                        effected_t1 = 0;
+                    else if (t1.Points > t2.Points)
+                        effected_t1 = 1;
+                    else
+                        effected_t1 = 0.5;
+
+
+                    double score_t1 = p1.Score + p2.Score;
+                    double score_t2 = p3.Score + p4.Score;
+                    var diff_teams = new List<double>
+                    {
+                        team_rater.Get(score_t1, score_t2, effected_t1, team_k_factor),
+                        team_rater.Get(score_t2, score_t1, 1 - effected_t1, team_k_factor)
+                    };
+
+                    var goals = new List<double>
+                    {
+                        match.GoalsOfMatch.Where(t => t.PlayerId == p1.PlayerId).First().Goals,
+                        match.GoalsOfMatch.Where(t => t.PlayerId == p2.PlayerId).First().Goals,
+                        match.GoalsOfMatch.Where(t => t.PlayerId == p3.PlayerId).First().Goals,
+                        match.GoalsOfMatch.Where(t => t.PlayerId == p4.PlayerId).First().Goals
+                    };
+
+                    var stats = new List<Stats>
+                    {
+                        new Stats { goals = goals[0], score = p1.Score },
+                        new Stats { goals = goals[1], score = p2.Score },
+                        new Stats { goals = goals[2], score = p3.Score },
+                        new Stats { goals = goals[3], score = p4.Score }
+                    };
+                    var perfs = player_perf_calc.Get(stats);
                 
-                Debug.WriteLine(perfs);
-                foreach(double b in perfs)
-                    Debug.WriteLine(b);
-                Debug.WriteLine("");
+                    Debug.WriteLine(perfs);
+                    foreach(double b in perfs)
+                        Debug.WriteLine(b);
+                    Debug.WriteLine("");
 
-                Debug.WriteLine(diff_teams[0]);
-                Debug.WriteLine(diff_teams[1]);
+                    Debug.WriteLine(diff_teams[0]);
+                    Debug.WriteLine(diff_teams[1]);
 
-                for (int i = 0; i < 4; ++i)
-                {
-                    var diff_player = diff_teams[i / 2] / 2;
-                    player_score_diffs[match_players[i].PlayerId] += diff_player + (Math.Abs(diff_player) * perfs[i]);
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        var diff_player = diff_teams[i / 2] / 2;
+                        player_score_diffs[match_players[i].PlayerId] += diff_player + (Math.Abs(diff_player) * perfs[i]);
+                    }
                 }
+
+                foreach(var pair in player_score_diffs)
+                {
+                    var player = players.First(t => t.PlayerId == pair.Key);
+                    Debug.WriteLine(" v = " + pair.Value);
+                    player.Score += (int)pair.Value;
+
+                    context.Entry(player).State = EntityState.Modified;
+                }
+
+                await context.SaveChangesAsync();
+                transaction.Commit();
             }
-
-            foreach(var pair in player_score_diffs)
-            {
-                var player = players.First(t => t.PlayerId == pair.Key);
-                Debug.WriteLine(" v = " + pair.Value);
-                player.Score += (int)pair.Value;
-
-                context.Entry(player).State = EntityState.Modified;
-            }
-
-            await context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -211,7 +219,11 @@ namespace babyfoot.Controllers
             if (context.Tournaments.Any(t => t.Token.Equals(view.Token)))
                 return BadRequest();
 
-            var tournament = webInterface.Create(view);
+            using(var transaction = context.Database.BeginTransaction())
+            {
+                var tournament = webInterface.Create(view);
+                transaction.Commit();
+            }
 
             return NoContent();
         }
@@ -227,7 +239,11 @@ namespace babyfoot.Controllers
             if (context.Matches.Any(t => t.Token.Equals(match_token)))
                 return BadRequest();
 
-            var match = webInterface.CreateAsync(view, token).Result;
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                var match = webInterface.CreateAsync(view, token).Result;
+                transaction.Commit();
+            }
 
             var task = CreatedAtAction("PostMatch", match_token, view);
 
