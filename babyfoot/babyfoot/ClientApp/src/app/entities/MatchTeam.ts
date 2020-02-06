@@ -7,12 +7,12 @@ export interface MatchTeam
 }
 
 
-export function getScore(team: MatchTeam)
+export function getScore(team: MatchPlayer[])
 {
-    return team.players[0].goals + team.players[1].goals;
+    return team[0].goals + team[1].goals;
 }
 
-export function newMatchTeam(team: MatchTeam)
+export function newMatchTeam(team: MatchPlayer): MatchPlayer[]
 {
-    return { points: 0, players: [{ pseudo: team.players[0].pseudo, goals: 0 }, { pseudo: team.players[1].pseudo, goals: 0 }] };
+    return [{ pseudo: team[0].pseudo, goals: 0 }, { pseudo: team[1].pseudo, goals: 0 }];
 }

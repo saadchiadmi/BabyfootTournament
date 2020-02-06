@@ -23,7 +23,12 @@ export class PlayerService {
         { pseudo: "valentin", score: 37, goals: 27, champions: 2 },
     ]) ;
 
+    URI: string = "https://localhost:44324/";
     getPlayers(): Observable<Player[]> {
         return this.http.get<Player[]>(this.baseUrl + "api/players");
+    }
+
+    savePlayer(player: Player): Observable<Player> {
+        return this.http.post<Player>(this.URI + "api/players", player);
     }
 }

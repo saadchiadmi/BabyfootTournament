@@ -9,7 +9,7 @@ import { MatchComponent } from './match/match.component';
 
 
 const routes: Routes = [
-  { path: 'tournament', component: TournamentComponent },
+  { path: 'tournaments', component: TournamentComponent },
   { path: 'tournament/:id', component: OneTournamentComponent },
   { path: 'match/:id', component: MatchComponent },
   { path: 'create', component: CreateTournamentComponent },

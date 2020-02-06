@@ -5,6 +5,7 @@ import { TournamentTeam, toMatchTeam } from '../entities/TournamentTeam';
 import { Match } from '../entities/Match';
 import { Tournament } from '../entities/Tournament';
 import { Router } from '@angular/router';
+import { TournamentService } from '../service/tournament.service';
 
 @Component({
   selector: 'app-create-tournament',
@@ -16,7 +17,7 @@ export class CreateTournamentComponent implements OnInit {
     players: Player[]=[];
     filteredPlayersMultiple: Player[];
 
-    constructor(private playerservice: PlayerService, private router: Router) { }
+    constructor(private playerservice: PlayerService, private tournamentservice: TournamentService, private router: Router) { }
 
     ngOnInit() {
     }
@@ -52,7 +53,9 @@ export class CreateTournamentComponent implements OnInit {
                 teams: teams,
                 matches: matches,
         };
-        this.router.navigate(["/tournaments", tournament.token], { state: {tournament: tournament}});
+        
+        this.router.navigate(["/tournament", tournament.token], { state: {tournament: tournament}});
+        this.tournamentservice.saveTournament(tournament).subscribe();
         console.log(tournament);
     }
 
@@ -67,7 +70,7 @@ export class CreateTournamentComponent implements OnInit {
         {
             let player1 = first.pop();
             let player2 = second.pop();
-            let team: TournamentTeam = { pseudos: [first.pop().pseudo, second.pop().pseudo], points: 0 };
+            let team: TournamentTeam = { pseudos: [player1.pseudo, player2.pseudo], points: 0 };
             teams.push(team);
         }
         return teams;
@@ -111,7 +114,6 @@ export class CreateTournamentComponent implements OnInit {
                 a++;
             }
         }
-        console.log(matches);
         return matches;
     }
 

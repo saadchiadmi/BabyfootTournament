@@ -1,5 +1,5 @@
-<p-dataView #dv [value]="players" [paginator]="true" [rows]="5" paginatorPosition="both" filterBy="pseudo"
-[sortField]="sortField" [sortOrder]="sortOrder">
+<p-dataView #dv [value]="players" [paginator]="true" [rows]="5" *ngIf="players" paginatorPosition="both" filterBy="pseudo"
+            [sortField]="sortField" [sortOrder]="sortOrder">
     <p-header>
         <div class="ui-helper-clearfix">
             <div class="ui-g">
@@ -8,10 +8,10 @@
                 </div>
                 <div class="ui-g-6 ui-md-4 filter-container ">
                     <div class="" style="position:relative">
-                        <input type="search" pInputText placeholder="Search by pseudo" (input)="search($event.target.value)">
+                        <input [(ngModel)]="pseudo" type="search" pInputText placeholder="Search by pseudo" (input)="search($event.target.value)">
                     </div>
                     <div class="ui-g-6 ui-md-4" style="position:relative" *ngIf="players.length==0">
-                            <button type="button" (click)="addPlayer()" class="btn btn-view">Add</button>
+                        <button type="button" (click)="addPlayer()" class="btn btn-info">Add</button>
                     </div>
                 </div>
                 <div class="ui-g-6 ui-md-4" style="text-align:right">
@@ -50,7 +50,7 @@
     </ng-template>
 </p-dataView>
 
-<p-dialog header="PLayer Details" [(visible)]="displayDialog" appendTo="body" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '225px'}"  (onAfterHide)="onDialogHide()">
+<p-dialog header="PLayer Details" [(visible)]="displayDialog" appendTo="body" [responsive]="true" showEffect="fade" [modal]="true" [style]="{width: '225px'}" (onAfterHide)="onDialogHide()">
     <div class="ui-g" *ngIf="selectedPlayer">
         <div class="ui-g-4">Pseudo: </div>
         <div class="ui-g-8">{{selectedPlayer.pseudo}}</div>
