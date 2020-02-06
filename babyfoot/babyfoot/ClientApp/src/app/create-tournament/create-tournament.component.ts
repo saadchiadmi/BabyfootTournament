@@ -108,7 +108,14 @@ export class CreateTournamentComponent implements OnInit {
                     state: "NotStarted",
                     stage: "Pool",
                     elapsed: 0,
-                    teams: [toMatchTeam(teams[i]), toMatchTeam(teams[j])]
+                    //teams: [toMatchTeam(teams[i]), toMatchTeam(teams[j])]
+                    teams: [[
+                        { pseudo: teams[i].pseudos[0], goals: 0 },
+                        { pseudo: teams[i].pseudos[1], goals: 0 }],
+                        [
+                            { pseudo: teams[j].pseudos[0], goals: 0 },
+                            { pseudo: teams[j].pseudos[1], goals: 0 }]
+                    ]
                 };
                 matches.push(match);
                 a++;

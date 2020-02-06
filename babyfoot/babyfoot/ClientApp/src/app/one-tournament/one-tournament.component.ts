@@ -52,6 +52,8 @@ export class OneTournamentComponent implements OnInit
             });
         }
         this.sortPoule();
+        console.log(this.tournament);
+        console.log(this.sortedPoolMatches);
         this.checkFinishPoule = this.tournament.matches.filter(m => m.state === "Ended" == true).length == this.tournament.matches.length ? true : false;
         this.checkFinishSemiFinal1 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 1 && m.state === "Ended") ? true : false;
         this.checkFinishSemiFinal2 = this.tournament.matches.filter(m => m.stage === "Semifinal" && m.order == 2 && m.state === "Ended") ? true : false;
