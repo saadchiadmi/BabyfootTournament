@@ -295,6 +295,9 @@ namespace babyfoot.Views
                 new PlayerGoal { Match = match, Player = p4, Goals = vp4.Goals }
             };
 
+            context.Entry(match).State = EntityState.Modified;
+            context.SaveChanges();
+
             // set teams of match
             match.TeamsOfMatch = new List<MatchTeam>
             {
