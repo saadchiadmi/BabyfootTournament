@@ -1,0 +1,6 @@
+{
+    "pseudo": "Thomas",
+    "score": 1730,
+    "goals": 31,
+    "champions": 2
+}

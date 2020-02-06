@@ -1,0 +1,4 @@
+{
+    "pseudo": "Thomas",
+    "score": 1500
+}

@@ -1,0 +1,107 @@
+
+Players :
+
+Objectif		Récupérer les stats de tous les joueurs
+Utilisation		Pour la page des players
+Format 			cf. fichier Player.txt (en liste)
+GET				api/Players
+Etat			Fonctionne
+
+Objectif		Récupérer les stats d'un joueur
+Utilisation		A priori on l'utilise pas
+Format 			cf. fichier Player.txt
+GET				api/Players/{pseudo}
+Exemple			api/Players/Saad
+Etat			Fonctionne
+
+Objectif		Ajouter un nouveau joueur
+Utilisation		Pour ajouter un joueur à tout moment dans la page des players
+Format 			cf. fichier NewPlayer.txt
+POST			api/Players
+Etat			Fonctionne
+
+Objectif		Ajouter plusieurs nouveaux joueurs
+Utilisation		Pour ajouter plusieurs joueurs à la fois (pourrait être utilisé à la création d'un tournoi)
+Format 			cf. fichier NewPlayer.txt (en liste)
+POST			api/Players/many
+Etat			Fonctionne
+
+Matches :
+
+Objectif		Récupérer les données d'un match
+Utilisation		A l'accès d'un match
+Format			cf. fichier Match.txt (en liste)
+GET				api/Matches/{token}
+Exemple			api/Matches/b4052fee59
+Etat			Fonctionne
+
+Objectif		Modifier un match
+Utilisation		Pendant un match
+Format			cf. fichier Match.txt
+PUT				api/Matches/{token}
+Exemple			api/Matches/b4052fee59
+Etat			Fonctionne
+
+Objectif		Mettre à jour les points gagnés à l'issu d'un match terminé
+Utilisation		Pendant un match
+Format			cf. fichier MatchPoints.txt
+PUT				api/Matches/{token}/points
+Exemple			api/Matches/b4052fee59/points
+Etat			Fonctionne
+
+
+Tournaments :
+
+Objectif		Récupérer tous les tournois
+Format 			cf. fichier Tournament.txt (en liste)
+GET				api/Tournaments
+Etat			Fonctionne
+
+Objectif		Récupérer les données d'un tournoi
+Utilisation		A l'accès d'un tournoi
+Format 			cf. fichier Tournament.txt
+GET				api/Tournaments/{token}
+Exemple			api/Tournaments/fda5b62126b4052fee59b4dc92
+Etat			Fonctionne
+
+Objectif		Modifier un tournoi
+Utilisation		Lorsque les matchs de poules sont ordonnés et que le tournoi change d'état
+Format 			cf. fichier Tournament.txt
+PUT				api/Tournaments/{token}
+Exemple			api/Tournaments/fda5b62126b4052fee59b4dc92
+Etat			Fonctionne
+
+Objectif		Mettre à jour les statistiques des joueurs
+Utilisation		A la validation d'un tournoi, ou dans l'historique des tournois ajoutés suite à une synchronisation
+Format 			cf. fichier Tournament.txt
+PUT				api/Tournaments/{token}/stats
+Exemple			api/Tournaments/fda5b62126b4052fee59b4dc92/stats
+Etat			Fonctionne
+
+Objectif		Créer un tournoi
+Utilisation		A la création d'un tournoi
+Format 			cf. fichier Tournament.txt
+POST			api/Tournaments
+Etat			Fonctionne
+
+Objectif		Ajouter un match à un tournoi
+Utilisation		Pour ajouter efficacement un match comme les demi finales et la finale
+Format			cf. fichier Match.txt
+POST			api/Tournaments/{token}/matches
+Exemple			api/Tournaments/fda5b62126b4052fee59b4dc92/matches
+Etat			Fonctionne
+
+
+
+Objectif		Synchroniser tous les tournois du client, et renvoyer l'état de la base de données
+Utilisation		A la reconnexion d'un client pour syncrhoniser les données
+Format 			Donné dans le fichier BabyfootState.txt
+PUT				api/Tournaments
+Etat			A faire
+
+
+
+
+
+
+
