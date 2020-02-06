@@ -22,7 +22,7 @@ namespace babyfoot.Views
         public String StateStr { get; set; }
 
         [JsonProperty(Order = 6, PropertyName = "start")]
-        public System.DateTime StartDate { get; set; }
+        public System.DateTime? StartDate { get; set; }
 
         [JsonProperty(Order = 7, PropertyName = "elapsed")]
         public int ElapsedSeconds { get; set; }

@@ -37,7 +37,7 @@ namespace babyfoot.Models
 
         public MatchState State { get; set; }
 
-        public System.DateTime StartDate { get; set; }
+        public System.DateTime? StartDate { get; set; }
 
         public int ElapsedSeconds { get; set; }
 
