@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using babyfoot.Models;
 using Newtonsoft.Json;
 using babyfoot.Views;
+using System.Transactions;
 
 namespace babyfoot.Controllers
 {
@@ -68,11 +69,11 @@ namespace babyfoot.Controllers
             if (!webInterface.CheckState(view, match))
                 return BadRequest();
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 await webInterface.ModifyAsync(view, match);
 
-                transaction.Commit();
+                scope.Complete();
             }
 
             return NoContent();
@@ -97,7 +98,7 @@ namespace babyfoot.Controllers
             if (!(match.State == MatchState.Ended))
                 return BadRequest();
 
-            using (var transaction = context.Database.BeginTransaction())
+            using (var scope = new TransactionScope())
             {
                 match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[0].Pseudos[0]))).Team.Points = view[0].Points;
                 match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[1].Pseudos[0]))).Team.Points = view[1].Points;
@@ -106,7 +107,7 @@ namespace babyfoot.Controllers
 
                 context.SaveChanges();
 
-                transaction.Commit();
+                scope.Complete();
             }
 
             return NoContent();
