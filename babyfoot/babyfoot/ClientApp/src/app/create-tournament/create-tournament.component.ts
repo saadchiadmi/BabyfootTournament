@@ -44,7 +44,7 @@ export class CreateTournamentComponent implements OnInit {
     createTournament()
     {
         let teams: TournamentTeam[] = this.generateRandomBalancedTeams();
-        let matches: Match[] = this.generateBetterOrderedMatches(teams);
+        let matches: Match[] = this.generateOrderedMatches(teams);
         let tournament: Tournament =
         {
                 token: Date.now() + "",
@@ -142,7 +142,7 @@ export class CreateTournamentComponent implements OnInit {
         let m = n - 1;
         var unrelated_tuples = this.getUnrelatedTuples(k, n, m);
 
-        let matches: Match[];
+        let matches: Match[]=[];
         let order = 1;
         for (var tuple of unrelated_tuples) {
             let match: Match =
@@ -153,7 +153,17 @@ export class CreateTournamentComponent implements OnInit {
                 state: "NotStarted",
                 stage: "Pool",
                 elapsed: 0,
-                teams: [toMatchTeam(teams[tuple[0]]), toMatchTeam(teams[tuple[1]])]
+                teams: [
+                    [
+                        { pseudo: teams[tuple[0]].pseudos[0], goals: 0 },
+                        { pseudo: teams[tuple[0]].pseudos[1], goals: 0 }
+                    ],
+                    [
+                        { pseudo: teams[tuple[1]].pseudos[0], goals: 0 },
+                        { pseudo: teams[tuple[1]].pseudos[1], goals: 0 }
+                    ]
+                ]
+                //teams: [toMatchTeam(teams[tuple[0]]), toMatchTeam(teams[tuple[1]])]
             };
             matches.push(match);
 
@@ -164,7 +174,7 @@ export class CreateTournamentComponent implements OnInit {
 
 
     range(start, end) :number[] {
-        let tab: number[];
+        let tab: number[] = [];
         for (var i = start; i <= end; i++) {
             tab.push(i);
         }
@@ -172,7 +182,7 @@ export class CreateTournamentComponent implements OnInit {
     }
 
     getIncrementalOrderedTuples(k: number, n: number): number[][] {
-        let tuples: number[][];
+        let tuples: number[][]=[];
         let tuple = this.range(0, k - 1);
 
         let reset_identity = (j: number) => {
@@ -228,7 +238,7 @@ export class CreateTournamentComponent implements OnInit {
 
     getUnrelatedTuples(k: number, n: number, m: number): number[][] {
 
-        let result: number[][];
+        let result: number[][]=[];
 
         let nb_tuples = (n * m) / k;
         let nb_visited = new Array<number>(n);

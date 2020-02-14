@@ -399,7 +399,7 @@ namespace babyfoot.Views
             {
                 Token = view.Token,
                 State = view.State,
-                CreateDate = view.CreateDate,
+                CreateDate = DateTime.Now,
                 Matches = new List<Match> { }
             };
 

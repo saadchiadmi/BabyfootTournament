@@ -26,7 +26,7 @@ export class TournamentService {
     }
 
     saveTournament(tournament: Tournament): Observable<Tournament> {
-        return this.http.put<Tournament>(this.URI + "api/tournaments", tournament);
+        return this.http.post<Tournament>(this.URI + "api/tournaments", tournament);
     }
 
 
