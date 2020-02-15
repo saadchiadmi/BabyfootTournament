@@ -8,7 +8,7 @@ namespace babyfoot.Models
 {
     public enum TournamentState
     {
-        Pool, Semifinal, Final, Ended
+        Pool, Semifinal, Final, Ended, Scored
     };
 
     public class Tournament

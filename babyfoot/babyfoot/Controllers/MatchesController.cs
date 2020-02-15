@@ -9,6 +9,8 @@ using babyfoot.Models;
 using Newtonsoft.Json;
 using babyfoot.Views;
 using System.Transactions;
+using babyfoot.Rules;
+using babyfoot.RequestManagers;
 
 namespace babyfoot.Controllers
 {
@@ -17,18 +19,23 @@ namespace babyfoot.Controllers
     public class MatchesController : ControllerBase
     {
         private readonly BabyfootDbContext context;
-        private readonly BabyfootWebInterface webInterface;
+        private readonly ViewMaker view_maker;
+        private readonly MatchManager match_manager;
 
         public MatchesController(BabyfootDbContext context)
         {
             this.context = context;
-            this.webInterface = new BabyfootWebInterface(context);
+            this.view_maker = new ViewMaker(context);
+            this.match_manager = new MatchManager(context);
         }
 
         // GET: api/Matches/{token}
         [HttpGet("{token}")]
         public async Task<ActionResult<MatchView>> GetMatch(String token)
         {
+            if (token == null)
+                return BadRequest();
+
             var match = await context.Matches
                 .Where(t => t.Token.Equals(token))
                 .Include(t => t.Tournament)
@@ -42,75 +49,243 @@ namespace babyfoot.Controllers
             if (match == null)
                 return NotFound();
 
-            var view = webInterface.View(match);
+            var view = view_maker.MatchView(match);
 
             return view;
         }
 
-        // PUT: api/Matches/{token}
-        [HttpPut("{token}")]
-        public async Task<IActionResult> PutMatch(String token, MatchView view)
+        // DELETE: api/Matches/{token}/{pseudo}/Goals
+        [HttpDelete("{token}/{pseudo}/Goals")]
+        public IActionResult RemoveGoal(String token, String pseudo)
         {
-            if (!token.Equals(view.Token))
+            if (token == null)
                 return BadRequest();
 
-                var match = await context.Matches.Where(t => t.Token.Equals(token))
-                .Include(t => t.Tournament)
-                .Include(t => t.GoalsOfMatch)
-                .Include(t => t.TeamsOfMatch)
-                    .ThenInclude(t => t.Team)
-                    .ThenInclude(t => t.PlayersOfTeam)
-                    .ThenInclude(t => t.Player)
-                    .FirstOrDefaultAsync();
+            if (pseudo == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+            .Include(t => t.Tournament)
+            .Include(t => t.GoalsOfMatch)
+            .Include(t => t.TeamsOfMatch)
+                .ThenInclude(t => t.Team)
+                .ThenInclude(t => t.PlayersOfTeam)
+                .ThenInclude(t => t.Player)
+                .FirstOrDefault();
 
             if (match == null)
                 return NotFound();
 
-            if (!webInterface.CheckState(view, match))
-                return BadRequest();
-
-            using (var scope = new TransactionScope())
+            try
             {
-                await webInterface.ModifyAsync(view, match);
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.RemoveGoal(pseudo, match);
 
-                scope.Complete();
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            return NoContent();
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("RemoveGoal", null, new_view);
+
+            return action;
         }
 
-        // PUT: api/Matches/{token}/points
-        [HttpPut("{token}/points")]
-        public async Task<IActionResult> PutEndedPoolMatch(String token, PointsView view)
+        // POST: api/Matches/{token}/{pseudo}/Goals
+        [HttpPost("{token}/{pseudo}/Goals")]
+        public IActionResult AddGoal(String token, String pseudo)
         {
-            var match = await context.Matches.Where(t => t.Token.Equals(token))
-                .Include(t => t.Tournament)
-                .Include(t => t.GoalsOfMatch)
-                .Include(t => t.TeamsOfMatch)
-                    .ThenInclude(t => t.Team)
-                    .ThenInclude(t => t.PlayersOfTeam)
-                    .ThenInclude(t => t.Player)
-                    .FirstOrDefaultAsync();
+            if (token == null)
+                return BadRequest();
+
+            if (pseudo == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+            .Include(t => t.Tournament)
+            .Include(t => t.GoalsOfMatch)
+            .Include(t => t.TeamsOfMatch)
+                .ThenInclude(t => t.Team)
+                .ThenInclude(t => t.PlayersOfTeam)
+                .ThenInclude(t => t.Player)
+                .FirstOrDefault();
 
             if (match == null)
                 return NotFound();
 
-            if (!(match.State == MatchState.Ended))
-                return BadRequest();
+            if (match.State != MatchState.InProgress)
+                return UnprocessableEntity();
 
-            using (var scope = new TransactionScope())
+            try
             {
-                match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[0].Pseudos[0]))).Team.Points = view[0].Points;
-                match.TeamsOfMatch.First(t => t.Team.PlayersOfTeam.Any(t => t.Player.Pseudo.Equals(view[1].Pseudos[0]))).Team.Points = view[1].Points;
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.AddGoal(pseudo, match);
 
-                context.Entry(match).State = EntityState.Modified;
-
-                context.SaveChanges();
-
-                scope.Complete();
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            return NoContent();
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("AddGoal", null, new_view);
+
+            return action;
+        }
+
+        // PUT: api/Matches/{token}/End
+        [HttpPut("{token}/End")]
+        public IActionResult End(String token)
+        {
+            if (token == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+                .Include(t => t.Tournament)
+                .Include(t => t.GoalsOfMatch)
+                    .ThenInclude(t => t.Player)
+                .Include(t => t.TeamsOfMatch)
+                    .ThenInclude(t => t.Team)
+                    .ThenInclude(t => t.PlayersOfTeam)
+                    .ThenInclude(t => t.Player)
+                    .FirstOrDefault();
+
+            if (match == null)
+                return NotFound();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.End(match);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("End", null, new_view);
+
+            return action;
+        }
+
+
+
+        // PUT: api/Matches/{token}/Start
+        [HttpPut("{token}/Start")]
+        public IActionResult Start(String token)
+        {
+            if (token == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+                    .FirstOrDefault();
+
+            if (match == null)
+                return NotFound();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.Start(match);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("Start", null, new_view);
+
+            return action;
+        }
+
+        // PUT: api/Matches/{token}/Restart
+        [HttpPut("{token}/Restart")]
+        public IActionResult Restart(String token)
+        {
+            if (token == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+                    .FirstOrDefault();
+
+            if (match == null)
+                return NotFound();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.Restart(match);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("Restart", null, new_view);
+
+            return action;
+        }
+
+        // PUT: api/Matches/{token}/Pause
+        [HttpPut("{token}/Pause")]
+        public IActionResult Pause(String token)
+        {
+            if (token == null)
+                return BadRequest();
+
+            var match = context.Matches.Where(t => t.Token.Equals(token))
+                    .FirstOrDefault();
+
+            if (match == null)
+                return NotFound();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    match_manager.Pause(match);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.MatchView(match);
+
+            var action = RedirectToAction("Pause", null, new_view);
+
+            return action;
         }
 
     }

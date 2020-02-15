@@ -11,6 +11,7 @@ namespace babyfoot.Models
     {
         NotStarted,
         InProgress,
+        Pause,
         Ended
     };
     public enum MatchStage
@@ -37,9 +38,11 @@ namespace babyfoot.Models
 
         public MatchState State { get; set; }
 
+        public int ElapsedSeconds { get; set; }
+
         public System.DateTime? StartDate { get; set; }
 
-        public int ElapsedSeconds { get; set; }
+        public System.DateTime? RestartDate { get; set; }
 
 
 

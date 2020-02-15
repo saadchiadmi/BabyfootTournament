@@ -23,11 +23,6 @@ namespace babyfoot.Elo
             this.coeff = coeff;
         }
 
-        public void SetScale(int scale)
-        {
-            this.scale = scale;
-        }
-
         public int GetScale()
         {
             return scale;
@@ -35,7 +30,7 @@ namespace babyfoot.Elo
 
         public double Get(double ra, double rb)
         {
-            return 1.0f * 1.0f / (1 + (Math.Pow(coeff, 1.0f * Math.Abs(rb - ra) / scale)));
+            return 1.0 / (1 + (Math.Pow(coeff, 1.0f * Math.Abs(rb - ra) / scale)));
         }
     }
 }

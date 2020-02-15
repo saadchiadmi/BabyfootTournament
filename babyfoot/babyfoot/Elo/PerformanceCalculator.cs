@@ -7,13 +7,11 @@ namespace babyfoot.Elo
 {
     public class PlayerPerformanceCalculator
     {
-        private EloRater rater;
-        private IWinProbabilityCalculator win_prob;
+        private IWinProbabilityCalculator player_win_prob;
 
-        public PlayerPerformanceCalculator(EloRater rater)
+        public PlayerPerformanceCalculator(IWinProbabilityCalculator player_win_prob)
         {
-            this.rater = rater;
-            this.win_prob = rater.GetWinProbabilityCalculator();
+            this.player_win_prob = player_win_prob;
         }
 
         public struct Stats
@@ -22,6 +20,8 @@ namespace babyfoot.Elo
             public double score;
         }
 
+        // return performance of a player between [0, 1] during a match
+        // goals difference with an other player should vary with win probabilities
         public List<double> Get(List<Stats> players)
         {
             List<Double> perf = new List<double>();
@@ -36,7 +36,7 @@ namespace babyfoot.Elo
                         continue;
                     if ((player.goals + other.goals) == 0)
                         continue;
-                    sum += (player.goals / (player.goals + other.goals)) - win_prob.Get(player.score, other.score);
+                    sum += (player.goals / (player.goals + other.goals)) - player_win_prob.Get(player.score, other.score);
                     ++j;
                 }
                 double average_player_perf = sum / (players.Count() - 1);

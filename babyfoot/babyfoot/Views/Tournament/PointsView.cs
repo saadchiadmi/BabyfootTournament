@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace babyfoot.Views
 {
-    public class PointsView : List<TournamentTeamView>
+    public class MatchScoresView : List<MatchTeamScoreView>
     {
         
+    }
+
+    public class MatchTeamScoreView
+    {
+        [JsonProperty(Order = 1, PropertyName = "points")]
+        public int Points { get; set; }
+
+        [JsonProperty(Order = 2, PropertyName = "pseudos")]
+        public List<MatchPlayerView> Players { get; set; }
     }
 }

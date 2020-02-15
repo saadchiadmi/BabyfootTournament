@@ -24,10 +24,13 @@ namespace babyfoot.Views
         [JsonProperty(Order = 6, PropertyName = "start")]
         public System.DateTime? StartDate { get; set; }
 
-        [JsonProperty(Order = 7, PropertyName = "elapsed")]
+        [JsonProperty(Order = 7, PropertyName = "restart")]
+        public System.DateTime? RestartDate { get; set; }
+
+        [JsonProperty(Order = 8, PropertyName = "elapsed")]
         public int ElapsedSeconds { get; set; }
 
-        [JsonProperty(Order = 8, PropertyName = "teams")]
+        [JsonProperty(Order = 9, PropertyName = "teams")]
         public List<MatchTeamView> Teams { get; set; }
 
 

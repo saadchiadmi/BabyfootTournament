@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using babyfoot;
 using babyfoot.Models;
-using System.Net.Http;
 using babyfoot.Views;
-using babyfoot.Elo;
-using static babyfoot.Elo.PlayerPerformanceCalculator;
-using System.Diagnostics;
 using System.Transactions;
+using babyfoot.Rules;
+using babyfoot.RequestManagers;
 
 namespace babyfoot.Controllers
 {
@@ -21,12 +17,18 @@ namespace babyfoot.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly BabyfootDbContext context;
-        private readonly BabyfootWebInterface webInterface;
+        private readonly ViewMaker view_maker;
+        private readonly TournamentManager tournament_manager;
+        private readonly MatchManager match_manager;
+        private readonly Synchronizer synchronizer;
 
         public TournamentsController(BabyfootDbContext context)
         {
             this.context = context;
-            this.webInterface = new BabyfootWebInterface(context);
+            this.view_maker = new ViewMaker(context);
+            this.tournament_manager = new TournamentManager(context);
+            this.match_manager = new MatchManager(context);
+            this.synchronizer = new Synchronizer(context);
         }
 
         
@@ -44,7 +46,7 @@ namespace babyfoot.Controllers
                     .ThenInclude(t => t.GoalsOfMatch)
                         .ToListAsync();
 
-            var views = new List<TournamentView>(tournaments.Select(t => webInterface.View(t)));
+            var views = new List<TournamentView>(tournaments.Select(t => view_maker.TournamentView(t)));
 
             return views;
         }
@@ -67,29 +69,84 @@ namespace babyfoot.Controllers
             if (tournament == null)
                 return NotFound();
 
-            var view = webInterface.View(tournament);
+            var view = view_maker.TournamentView(tournament);
 
             return view;
         }
 
-        // PUT: api/Tournaments/{token}
-        [HttpPut("{token}")]
-        public IActionResult PutTournament(String token, TournamentView view)
+        // PUT: api/Tournaments/{token}/AddFinal
+        [HttpPost("{token}/Final")]
+        public IActionResult AddFinal(String token, MatchMakingView view)
         {
-            if (!token.Equals(view.Token))
-                return BadRequest();
+            var tournament = context.Tournaments
+                .Where(t => t.Token.Equals(token))
+                .FirstOrDefault();
 
-            using (var scope = new TransactionScope())
+            if (tournament == null)
+                return NotFound();
+
+            if (!(tournament.State == TournamentState.Semifinal))
+                return UnprocessableEntity();
+
+            try
             {
-                var tournament = webInterface.ModifyAsync(view).Result;
-                scope.Complete();
+                using (var scope = new TransactionScope())
+                {
+                    tournament_manager.AddFinal(view, tournament);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            return NoContent();
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = RedirectToAction("AddFinal", null, new_view);
+
+            return action;
         }
 
-        [HttpPut("{token}/stats")]
-        public async Task<IActionResult> PutStats(String token)
+        // PUT: api/Tournaments/{token}/Semifinals
+        [HttpPost("{token}/Semifinals")]
+        public IActionResult AddSemifinals(String token, List<MatchMakingView> view)
+        {
+            var tournament = context.Tournaments
+                .Where(t => t.Token.Equals(token))
+                .FirstOrDefault();
+
+            if (tournament == null)
+                return NotFound();
+
+            if (!(tournament.State == TournamentState.Pool))
+                return UnprocessableEntity();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    tournament_manager.AddSemifinals(view, tournament);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = RedirectToAction("AddSemifinals", null, new_view);
+
+            return action;
+        }
+
+        // PUT: api/Tournaments/{token}/Score
+        [HttpPut("{token}/Score")]
+        public async Task<IActionResult> Score(String token)
         {
             var tournament = await context.Tournaments
                 .Where(t => t.Token.Equals(token))
@@ -105,150 +162,171 @@ namespace babyfoot.Controllers
             if (tournament == null)
                 return NotFound();
 
-            if (!(tournament.State == TournamentState.Final || tournament.State == TournamentState.Ended))
-                return BadRequest();
+            if (!(tournament.State == TournamentState.Final))
+                return UnprocessableEntity();
 
-            using (var scope = new TransactionScope())
+            try
             {
-                tournament.State = TournamentState.Ended;
-                var teams = new List<Team>(tournament.Matches.SelectMany(t => t.TeamsOfMatch).DistinctBy(t => t.TeamId).Select(t => t.Team));
-
-                EloRater team_rater = new EloRater(new LogisticWinProbabilityCalculator(400 * 2, 10));
-                PlayerPerformanceCalculator player_perf_calc = new PlayerPerformanceCalculator(team_rater);
-
-                var matches = tournament.Matches;
-                double team_k_factor = 50;
-
-                var win_prob = team_rater.GetWinProbabilityCalculator();
-                var player_score_diffs = new Dictionary<int, double>();
-                var players = new List<Player>(teams.SelectMany(t => t.PlayersOfTeam.Select(t => t.Player)));
-
-                foreach (Player player in players)
-                    player_score_diffs.Add(player.PlayerId, 0);
-
-
-                foreach (Match match in matches)
+                using (var scope = new TransactionScope())
                 {
-                    List<Team> match_teams = new List<Team>(match.TeamsOfMatch.Select(t => t.Team));
-                    var (t1, t2) = (match_teams[0], match_teams[1]);
-                    var (p1, p2) = (t1.PlayersOfTeam.ElementAt(0).Player, t1.PlayersOfTeam.ElementAt(1).Player);
-                    var (p3, p4) = (t2.PlayersOfTeam.ElementAt(0).Player, t2.PlayersOfTeam.ElementAt(1).Player);
+                    tournament_manager.Score(tournament);
 
-                    var match_players = new List<Player> { p1, p2, p3, p4 };
-
-
-                    double effected_t1;
-                    if (t1.Points < t2.Points)
-                        effected_t1 = 0;
-                    else if (t1.Points > t2.Points)
-                        effected_t1 = 1;
-                    else
-                        effected_t1 = 0.5;
-
-
-                    double score_t1 = p1.Score + p2.Score;
-                    double score_t2 = p3.Score + p4.Score;
-                    var diff_teams = new List<double>
-                    {
-                        team_rater.Get(score_t1, score_t2, effected_t1, team_k_factor),
-                        team_rater.Get(score_t2, score_t1, 1 - effected_t1, team_k_factor)
-                    };
-
-                    var goals = new List<double>
-                    {
-                        match.GoalsOfMatch.Where(t => t.PlayerId == p1.PlayerId).First().Goals,
-                        match.GoalsOfMatch.Where(t => t.PlayerId == p2.PlayerId).First().Goals,
-                        match.GoalsOfMatch.Where(t => t.PlayerId == p3.PlayerId).First().Goals,
-                        match.GoalsOfMatch.Where(t => t.PlayerId == p4.PlayerId).First().Goals
-                    };
-
-                    var stats = new List<Stats>
-                    {
-                        new Stats { goals = goals[0], score = p1.Score },
-                        new Stats { goals = goals[1], score = p2.Score },
-                        new Stats { goals = goals[2], score = p3.Score },
-                        new Stats { goals = goals[3], score = p4.Score }
-                    };
-                    var perfs = player_perf_calc.Get(stats);
-                
-                    Debug.WriteLine(perfs);
-                    foreach(double b in perfs)
-                        Debug.WriteLine(b);
-                    Debug.WriteLine("");
-
-                    Debug.WriteLine(diff_teams[0]);
-                    Debug.WriteLine(diff_teams[1]);
-
-                    for (int i = 0; i < 4; ++i)
-                    {
-                        var diff_player = diff_teams[i / 2] / 2;
-                        player_score_diffs[match_players[i].PlayerId] += diff_player + (Math.Abs(diff_player) * perfs[i]);
-                    }
+                    scope.Complete();
                 }
-
-                foreach(var pair in player_score_diffs)
-                {
-                    var player = players.First(t => t.PlayerId == pair.Key);
-                    Debug.WriteLine(" v = " + pair.Value);
-                    player.Score += (int)pair.Value;
-
-                    context.Entry(player).State = EntityState.Modified;
-                }
-
-                await context.SaveChangesAsync();
-                scope.Complete();
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            return NoContent();
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = RedirectToAction("Score", null, new_view);
+
+            return action;
         }
 
-        // PUT: api/Tournaments
-        [HttpPut]
-        public void PutTournaments(BabyfootStateView view)
+
+
+        // PUT: api/Tournaments/{token}/End
+        [HttpPut("{token}/End")]
+        public async Task<IActionResult> End(String token)
         {
-            // TODO
-            //var known = context.Players.Where(t => view.Players.Select(t => t.Pseudo).Contains(t.Pseudo));
+            var tournament = await context.Tournaments
+                .Where(t => t.Token.Equals(token))
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.TeamsOfMatch)
+                            .ThenInclude(t => t.Team)
+                                .ThenInclude(t => t.PlayersOfTeam)
+                                    .ThenInclude(t => t.Player)
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.GoalsOfMatch)
+                            .FirstOrDefaultAsync();
+
+            if (tournament == null)
+                return NotFound();
+
+            if (!(tournament.State == TournamentState.Ended))
+                return UnprocessableEntity();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    tournament_manager.End(tournament);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = RedirectToAction("End", null, new_view);
+
+            return action;
+        }
 
 
-            //context.SaveChanges();
+
+        // PUT: api/Tournaments/{token}/EndAndScore
+        [HttpPut("{token}/EndAndScore")]
+        public async Task<IActionResult> EndAndScore(String token)
+        {
+            var tournament = await context.Tournaments
+                .Where(t => t.Token.Equals(token))
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.TeamsOfMatch)
+                            .ThenInclude(t => t.Team)
+                                .ThenInclude(t => t.PlayersOfTeam)
+                                    .ThenInclude(t => t.Player)
+                    .Include(t => t.Matches)
+                        .ThenInclude(t => t.GoalsOfMatch)
+                            .FirstOrDefaultAsync();
+
+            if (tournament == null)
+                return NotFound();
+
+            if (!(tournament.State == TournamentState.Ended))
+                return UnprocessableEntity();
+
+            try
+            {
+                using (var scope = new TransactionScope())
+                {
+                    tournament_manager.EndAndScore(tournament);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
+            }
+
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = RedirectToAction("EndAndScore", null, new_view);
+
+            return action;
         }
 
         // POST: api/Tournaments
         [HttpPost]
-        public IActionResult PostTournament(TournamentView view)
+        public IActionResult Create(List<MatchMakingView> view)
         {
-            if (context.Tournaments.Any(t => t.Token.Equals(view.Token)))
-                return BadRequest();
+            Tournament tournament;
 
-            using(var scope = new TransactionScope())
+            try
             {
-                var tournament = webInterface.Create(view);
-                scope.Complete();
+                using (var scope = new TransactionScope())
+                {
+                    tournament = tournament_manager.Create(view);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            return NoContent();
+            var new_view = view_maker.TournamentView(tournament);
+
+            var action = CreatedAtAction("Create", null, new_view);
+
+            return action;
         }
 
-
-        // POST: api/Tournaments/{token}/matches
-        [HttpPost("{token}/matches")]
-        public ActionResult<MatchView> PostMatch(String token, MatchView view)
+        // PUT: api/Tournaments/Synchronize
+        [HttpPut("Synchronize")]
+        public IActionResult Synchronize(ClientStateView view)
         {
-            var match_token = view.Token;
-            if (!context.Tournaments.Any(t => t.Token.Equals(token)))
-                return BadRequest();
-            if (context.Matches.Any(t => t.Token.Equals(match_token)))
-                return BadRequest();
+            List<TournamentTokenRenameView> renames;
 
-            using (var transaction = context.Database.BeginTransaction())
+            try
             {
-                var match = webInterface.CreateAsync(view, token).Result;
-                transaction.Commit();
+                using (var scope = new TransactionScope())
+                {
+                    renames = synchronizer.Synchronize(view);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception)
+            {
+                return UnprocessableEntity();
             }
 
-            var task = CreatedAtAction("PostMatch", match_token, view);
+            var vserver = view_maker.ServerStateView();
 
-            return task;
+            var action = RedirectToAction("Synchronize", null, new { State = vserver, Renames = renames });
+
+            return action;
         }
+
     }
 }
