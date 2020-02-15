@@ -1,20 +1,20 @@
 <div *ngIf="show">
-    <div class="card shadow-sm" *ngIf="checkFinishPoule">
+    <div class="card shadow-sm" *ngIf="tree[0]">
         <div class="card-body">
             <h5 class="card-title text-center text-info">Final</h5>
             <div class="row text-center pointer" (click)="selectMatch($event, tree[0])">
                 <div class="col">
-                    {{tree[0].teams[0].players[0].pseudo}} - {{tree[0].teams[0].players[1].pseudo}}
+                    {{tree[0].teams[0][0].pseudo}} - {{tree[0].teams[0][1].pseudo}}
                 </div>
                 <div class="col" *ngIf="tree[0].state=='Ended'">
-                    {{tree[0].teams[0].players[0].goals + tree[0].teams[0].players[1].goals}} -
-                    {{tree[0].teams[1].players[0].goals + tree[0].teams[1].players[1].goals}}
+                    {{tree[0].teams[0][0].goals + tree[0].teams[0][1].goals}} -
+                    {{tree[0].teams[1][0].goals + tree[0].teams[1][1].goals}}
                 </div>
-                <div class="col" *ngIf="!tree[0].state=='Ended'">
+                <div class="col" *ngIf="tree[0].state!='Ended'">
                     -
                 </div>
                 <div class="col">
-                    {{tree[0].teams[1].players[0].pseudo}} - {{tree[0].teams[1].players[1].pseudo}}
+                    {{tree[0].teams[1][0].pseudo}} - {{tree[0].teams[1][1].pseudo}}
                 </div>
             </div>
         </div>
@@ -25,33 +25,33 @@
             <h6 class="card-title text-center text-info">Semi-final</h6>
             <div class="row text-center pointer" (click)="selectMatch($event, tree[1])">
                 <div class="col">
-                    {{tree[1].teams[0].players[0].pseudo}} - {{tree[1].teams[0].players[1].pseudo}}
+                    {{tree[1].teams[0][0].pseudo}} - {{tree[1].teams[0][1].pseudo}}
                 </div>
                 <div class="col" *ngIf="tree[1].state=='Ended'">
-                    {{tree[1].teams[0].players[0].goals + tree[1].teams[0].players[1].goals}} -
-                    {{tree[1].teams[1].players[0].goals + tree[1].teams[1].players[1].goals}}
+                    {{tree[1].teams[0][0].goals + tree[1].teams[0][1].goals}} -
+                    {{tree[1].teams[1][0].goals + tree[1].teams[1][1].goals}}
                 </div>
-                <div class="col" *ngIf="!tree[1].state=='Ended'">
+                <div class="col" *ngIf="tree[1].state!='Ended'">
                     -
                 </div>
                 <div class="col">
-                    {{tree[1].teams[1].players[0].pseudo}} - {{tree[1].teams[1].players[1].pseudo}}
+                    {{tree[1].teams[1][0].pseudo}} - {{tree[1].teams[1][1].pseudo}}
                 </div>
             </div>
             <hr>
             <div class="row text-center pointer" (click)="selectMatch($event, tree[2])">
                 <div class="col">
-                    {{tree[2].teams[0].players[0].pseudo}} - {{tree[2].teams[0].players[1].pseudo}}
+                    {{tree[2].teams[0][0].pseudo}} - {{tree[2].teams[0][1].pseudo}}
                 </div>
                 <div class="col" *ngIf="tree[2].state=='Ended'">
-                    {{tree[2].teams[0].players[0].goals + tree[2].teams[0].players[1].goals}} -
-                    {{tree[2].teams[1].players[0].goals + tree[2].teams[1].players[1].goals}}
+                    {{tree[2].teams[0][0].goals + tree[2].teams[0][1].goals}} -
+                    {{tree[2].teams[1][0].goals + tree[2].teams[1][1].goals}}
                 </div>
-                <div class="col" *ngIf="!tree[2].state=='Ended'">
+                <div class="col" *ngIf="tree[2].state!='Ended'">
                     -
                 </div>
                 <div class="col">
-                    {{tree[2].teams[1].players[0].pseudo}} - {{tree[2].teams[1].players[1].pseudo}}
+                    {{tree[2].teams[1][0].pseudo}} - {{tree[2].teams[1][1].pseudo}}
                 </div>
             </div>
         </div>
@@ -92,20 +92,22 @@
         <div class="card-body">
             <h6 class="card-title text-center text-info">Match</h6>
             <div *ngFor="let match of sortedPoolMatches; let i = index">
-                <hr *ngIf="i!=0">
-                <div class="row text-center pointer" (click)="selectMatch($event, match)">
-                    <div class="col">
-                        {{match.teams[0][0].pseudo}} - {{match.teams[0][1].pseudo}}
-                    </div>
-                    <div class="col" *ngIf="match.state=='Ended'">
-                        {{match.teams[0][0].goals + match.teams[0][1].goals}} -
-                        {{match.teams[1][0].goals + match.teams[1][1].goals}}
-                    </div>
-                    <div class="col" *ngIf="!match.state=='Ended'">
-                        -
-                    </div>
-                    <div class="col">
-                        {{match.teams[1][0].pseudo}} - {{match.teams[1][1].pseudo}}
+                <div *ngIf="match.stage=='Pool'">
+                    <hr *ngIf="i!=0">
+                    <div class="row text-center pointer" (click)="selectMatch($event, match)">
+                        <div class="col">
+                            {{match.teams[0][0].pseudo}} - {{match.teams[0][1].pseudo}}
+                        </div>
+                        <div class="col" *ngIf="match.state=='Ended'">
+                            {{match.teams[0][0].goals + match.teams[0][1].goals}} -
+                            {{match.teams[1][0].goals + match.teams[1][1].goals}}
+                        </div>
+                        <div class="col" *ngIf="match.state!='Ended'">
+                            -
+                        </div>
+                        <div class="col">
+                            {{match.teams[1][0].pseudo}} - {{match.teams[1][1].pseudo}}
+                        </div>
                     </div>
                 </div>
             </div>

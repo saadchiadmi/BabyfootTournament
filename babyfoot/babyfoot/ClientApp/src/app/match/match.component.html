@@ -1,57 +1,57 @@
 <div class="card shadow-sm" *ngIf="selectedMatch"> 
 <br>
-  <h5 class="card-title text-center text-view" *ngIf="checkIfFinishPoule()">FINAL</h5>
-  <h5 class="card-title text-center text-view" *ngIf="!checkIfFinishPoule()"><countdown #countdown [config]="{leftTime: 5, format: 'm:s'}" (event)="timesUp($event)"></countdown></h5>
+  <h5 class="card-title text-center text-info" *ngIf="checkIfFinishPoule()">FINAL</h5>
+  <h5 class="card-title text-center text-info" *ngIf="!checkIfFinishPoule()"><countdown #countdown [config]="{leftTime: 300, format: 'm:s'}" (event)="timesUp($event)"></countdown></h5>
   <div class="card-body">
     <div class="text-center">
       <div class="row">
-        <div class="col">{{selectedMatch.teams[0].players[0].pseudo}}</div>
-        <div class="col">{{selectedMatch.teams[0].players[0].goals}}</div>
-        <div class="col">{{selectedMatch.teams[1].players[0].goals}}</div>
-        <div class="col">{{selectedMatch.teams[1].players[0].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0][0].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0][0].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1][0].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1][0].pseudo}}</div>
       </div>
       <br>
       <div class="row">
         <div class="col">
-          <button type="button" (click)="dropGoal('teams[0].players[0].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal(0, 0)" class="btn btn-outline-danger btn-circle btn-sm">-</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="addGoal('teams[0].players[0].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal(0, 0)" class="btn btn-outline-success btn-circle btn-sm">+</button>
         </div>
         <div class="col">
-          <button type="button" (click)="addGoal('teams[1].players[0].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal(1, 0)" class="btn btn-outline-success btn-circle btn-sm">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="dropGoal('teams[1].players[0].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal(1, 0)" class="btn btn-outline-danger btn-circle btn-sm">-</button>
         </div>
       </div>
       <br>
       <div class="row">
-        <div class="col">{{selectedMatch.teams[0].players[1].pseudo}}</div>
-        <div class="col">{{selectedMatch.teams[0].players[1].goals}}</div>
-        <div class="col">{{selectedMatch.teams[1].players[1].goals}}</div>
-        <div class="col">{{selectedMatch.teams[1].players[1].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0][1].pseudo}}</div>
+        <div class="col">{{selectedMatch.teams[0][1].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1][1].goals}}</div>
+        <div class="col">{{selectedMatch.teams[1][1].pseudo}}</div>
       </div>
       <br>
       <div class="row">
         <div class="col">
-          <button type="button" (click)="dropGoal('teams[0].players[1].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal(0, 1)" class="btn btn-outline-danger btn-circle btn-sm">-</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="addGoal('teams[0].players[1].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal(0, 1)" class="btn btn-outline-success btn-circle btn-sm">+</button>
         </div>
         <div class="col">
-          <button type="button" (click)="addGoal('teams[1].players[1].goals')" class="btn btn-outline-success btn-circle btn-sm">+</button>
+          <button type="button" (click)="addGoal(1, 1)" class="btn btn-outline-success btn-circle btn-sm">+</button>
           &nbsp;&nbsp;&nbsp;
-          <button type="button" (click)="dropGoal('teams[1].players[1].goals')" class="btn btn-outline-danger btn-circle btn-sm">-</button>
+          <button type="button" (click)="dropGoal(1, 1)" class="btn btn-outline-danger btn-circle btn-sm">-</button>
         </div>
       </div>
       <div class="ui-g-12 font-weight-bold">
-        {{selectedMatch.teams[0].players[0].goals + selectedMatch.teams[0].players[1].goals}} -
-        {{selectedMatch.teams[1].players[0].goals + selectedMatch.teams[1].players[1].goals}}
+        {{selectedMatch.teams[0][0].goals + selectedMatch.teams[0][1].goals}} -
+        {{selectedMatch.teams[1][0].goals + selectedMatch.teams[1][1].goals}}
       </div>
     </div>
   </div>
 </div>
 <br>
 <div class="text-center" *ngIf="updateScore">
-    <button type="button" (click)="finish()" class="btn btn-lg btn-view">FINISH</button>
+    <button type="button" (click)="finish()" class="btn btn-lg btn-info">FINISH</button>
 </div>
 <p-confirmDialog appendTo="body" [style]="{width: '50vw'}"></p-confirmDialog>

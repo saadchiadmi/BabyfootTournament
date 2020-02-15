@@ -55,7 +55,7 @@ export class CreateTournamentComponent implements OnInit {
         };
         
         this.router.navigate(["/tournament", tournament.token], { state: {tournament: tournament}});
-        this.tournamentservice.saveTournament(tournament).subscribe();
+        //this.tournamentservice.saveTournament(tournament).subscribe();
         console.log(tournament);
     }
 
@@ -104,7 +104,14 @@ export class CreateTournamentComponent implements OnInit {
                     state: "NotStarted",
                     stage: "Pool",
                     elapsed: 0,
-                    teams: [toMatchTeam(teams[i]), toMatchTeam(teams[j])]
+                    //teams: [toMatchTeam(teams[i]), toMatchTeam(teams[j])]
+                    teams: [[
+                        { pseudo: teams[i].pseudos[0], goals: 0 },
+                        { pseudo: teams[i].pseudos[1], goals: 0 }],
+                        [
+                            { pseudo: teams[j].pseudos[0], goals: 0 },
+                            { pseudo: teams[j].pseudos[1], goals: 0 }]
+                    ]
                 };
                 matches.push(match);
                 a++;
@@ -124,6 +131,220 @@ export class CreateTournamentComponent implements OnInit {
     }
 
 
+    generateBetterOrderedMatches(teams: TournamentTeam[]): Match[] {
+        let k = 2;
+        let n = teams.length;
+        let m = n - 1;
+        var unrelated_tuples = this.getUnrelatedTuples(k, n, m);
 
+        let matches: Match[]=[];
+        let order = 1;
+        for (var tuple of unrelated_tuples) {
+            let match: Match =
+            {
+                token: Date.now() + "" + order,
+                start: null,
+                order: order,
+                state: "NotStarted",
+                stage: "Pool",
+                elapsed: 0,
+                teams: [
+                    [
+                        { pseudo: teams[tuple[0]].pseudos[0], goals: 0 },
+                        { pseudo: teams[tuple[0]].pseudos[1], goals: 0 }
+                    ],
+                    [
+                        { pseudo: teams[tuple[1]].pseudos[0], goals: 0 },
+                        { pseudo: teams[tuple[1]].pseudos[1], goals: 0 }
+                    ]
+                ]
+                //teams: [toMatchTeam(teams[tuple[0]]), toMatchTeam(teams[tuple[1]])]
+            };
+            matches.push(match);
+
+            ++order;
+        }
+        return matches;
+    }
+
+
+    range(start, end) :number[] {
+        let tab: number[] = [];
+        for (var i = start; i <= end; i++) {
+            tab.push(i);
+        }
+        return tab;
+    }
+
+    getIncrementalOrderedTuples(k: number, n: number): number[][] {
+        let tuples: number[][]=[];
+        let tuple = this.range(0, k - 1);
+
+        let reset_identity = (j: number) => {
+            for (var i of this.range(0, j - 1)) {
+                tuple[i] = i;
+            }
+        }
+
+        tuples.push(tuple);
+
+        if (n > k) {
+            let last_i = k - 1;
+            let i = k - 1;
+
+            while (tuple[0] != n - k) {
+                if (i == last_i) {
+                    reset_identity(i);
+                    ++tuple[i];
+                    --i;
+                }
+                else if (tuple[i] + 1 == tuple[i + 1]) {
+                    if (i == 0) {
+                        i = last_i;
+                        reset_identity(i);
+                        ++tuple[i];
+                        --i;
+                    }
+                    else {
+                        reset_identity(i);
+                        --i;
+                        ++tuple[i];
+                    }
+                }
+                else
+                    ++tuple[i];
+
+
+                tuples.push(tuple);
+            }
+        }
+        return tuples;
+    }
+
+    linearizedIndex(v: number[], n: number): number {
+        let res = 0;
+        let p = 1;
+        for (var k of v) {
+            res += +k * p;
+            p *= n;
+        }
+        return res;
+    }
+
+    getUnrelatedTuples(k: number, n: number, m: number): number[][] {
+
+        let result: number[][]=[];
+
+        let nb_tuples = (n * m) / k;
+        let nb_visited = new Array<number>(n);
+        let last = new Array<number>(n);
+        let tuple_visited = new Array<boolean>(Math.pow(n, k));
+
+
+        for (var i = nb_visited.length - 1; i > 0; i--) {
+            nb_visited.push(0);
+        }
+        for (var i = last.length - 1; i > 0; i--) {
+            last.push(0);
+        }
+        for (var i = tuple_visited.length - 1; i > 0; i--) {
+            tuple_visited.push(false);
+        }
+
+
+        let compare_last = (a: number, b: number): number => {
+            if (last[a] < last[b])
+                return -1;
+            else if (last[a] == last[b]) {
+                if (nb_visited[a] < nb_visited[b])
+                    return -1;
+                else if (nb_visited[a] == nb_visited[b])
+                    return 0;
+                else
+                    return 1;
+            }
+            else
+                return 1;
+        };
+
+        let compare_visited = (a: number, b: number): number => {
+            if (nb_visited[a] < nb_visited[b])
+                return -1;
+            else if (nb_visited[a] == nb_visited[b]) {
+                if (last[a] < last[b])
+                    return -1;
+                else if (last[a] == last[b])
+                    return 0;
+                else
+                    return 1;
+            }
+            else
+                return 1;
+        };
+
+        for (var i of this.range(1, nb_tuples)) {
+            let tuple = new Array<number>(k);
+            let ordered_tuple = new Array<number>(k);
+
+            // prioritize visited compare for the last 2 matches, to ensure that anyone is left alone at (m - 2) matches
+            let compare = (nb_tuples - +i) < 3 ? compare_visited : compare_last;
+
+            let best = this.range(0, n - 1);
+            best.sort(compare);
+
+            let tuples: number[][] = this.getIncrementalOrderedTuples(k, n);
+
+            for (var indexes of tuples) {
+                let go_next = false;
+                let i_t = 0;
+                for (var b of indexes) {
+                    if (nb_visited[best[b]] == m) {
+                        go_next = true;
+                        break;
+                    }
+                    tuple[i_t++] = best[b];
+                }
+                if (go_next)
+                    continue;
+                ordered_tuple = tuple.slice(0, k);
+                ordered_tuple.sort();
+                if (!tuple_visited[this.linearizedIndex(ordered_tuple, n)])
+                    break;
+            }
+            // if no non-visited tuple is found, we take a visited one
+            if (tuple_visited[this.linearizedIndex(ordered_tuple, n)]) {
+                let found = false;
+
+                let tuples2: number[][] = this.getIncrementalOrderedTuples(k, n);
+                for (indexes of tuples2) {
+                    let go_next = false;
+                    let i_t = 0;
+                    for (var b of indexes) {
+                        if (nb_visited[best[b]] == m) {
+                            go_next = true;
+                            break;
+                        }
+                        tuple[i_t++] = best[b];
+                    }
+                    if (go_next)
+                        continue;
+                    ordered_tuple = tuple.slice(0, k);
+                    ordered_tuple.sort();
+                    found = true;
+                    break;
+                }
+            }
+
+            for (var v of tuple) {
+                last[v] = i;
+                ++nb_visited[v];
+            }
+
+            tuple_visited[this.linearizedIndex(ordered_tuple, n)] = true;
+
+            result.push(ordered_tuple);
+        }
+        return result;
+    }
 
 }

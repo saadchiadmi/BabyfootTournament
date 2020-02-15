@@ -40,11 +40,12 @@ export class MatchComponent implements OnInit {
             this.matchService.getMatchById(this.id).subscribe(res => {
                 this.selectedMatch = res;
             });
+        console.log(this.selectedMatch);
     }
 
-    addGoal(s: string)
+    addGoal(i: number, j: number)
     {
-        this.selectedMatch[s] = this.selectedMatch[s] + 1;
+        this.selectedMatch.teams[i][j].goals = this.selectedMatch.teams[i][j].goals + 1;
         let t1 = this.selectedMatch.teams[0];
         let t2 = this.selectedMatch.teams[1];
 
@@ -68,32 +69,34 @@ export class MatchComponent implements OnInit {
                 accept: () =>
                 {
                     this.compute();
+                    console.log(this.tournament);
                     //put tournament
-                    this.router.navigate(["/tournaments", this.tournament.token], { state: {tournament: this.tournament}});
+                    this.router.navigate(["/tournament", this.tournament.token], { state: {tournament: this.tournament}});
                 },
                 reject: () =>
                 {
                     this.selectedMatch.state === "InProgress";
-                    this.dropGoal(s);
+                    this.dropGoal(i, j);
                 }
             });
         }
     }
 
-    dropGoal(s: string) {
-        if (this.selectedMatch[s] != 0)
-          this.selectedMatch[s] = this.selectedMatch[s] - 1; 
+    dropGoal(i: number, j: number) {
+        if (this.selectedMatch.teams[i][j].goals != 0)
+            this.selectedMatch.teams[i][j].goals = this.selectedMatch.teams[i][j].goals - 1; 
     }
 
     getMatch(token: string): Match
     {
+        this.tournament.matches.filter(m => m.token === token)[0].start = new Date(Date.now());
         let match: Match = this.tournament.matches.filter(m => m.token === token)[0];
         return match;
     }
 
     checkIfFinishPoule(): boolean
     {
-        return this.tournament.matches.filter(m => m.state === "Ended").length == this.tournament.matches.length;
+        return this.tournament.matches.filter(m => m.stage == "Pool").filter(m => m.state === "Ended").length == this.tournament.matches.filter(m => m.stage == "Pool").length ? true : false;
     }
 
     checkIfFinishSemiFinal(): boolean
@@ -135,7 +138,7 @@ export class MatchComponent implements OnInit {
                 this.selectedMatch.state = "Ended";
                 this.compute();
                 //put tournament
-                this.router.navigate(["/tournaments", this.tournament.token], { state: {tournament: this.tournament}});
+                this.router.navigate(["/tournament", this.tournament.token], { state: {tournament: this.tournament}});
             },
             reject: () =>
             {
@@ -170,7 +173,7 @@ export class MatchComponent implements OnInit {
                 this.tournament.teams[indexTeam2].points = this.tournament.teams[indexTeam2].points + 2;
             }
 
-            if (this.checkIfFinishPoule)
+            if (this.tournament.matches.filter(m => m.state === "Ended").length == this.tournament.matches.length)
             {
                 this.sortPoule();
                 let semifinal1: Match =
@@ -181,7 +184,10 @@ export class MatchComponent implements OnInit {
                     state: "NotStarted",
                     stage: "Semifinal",
                     elapsed: 0,
-                    teams: [toMatchTeam(this.tournament.teams[0]), toMatchTeam(this.tournament.teams[2])]
+                    teams: [[{ pseudo: this.tournament.teams[0].pseudos[0], goals: 0 },
+                        { pseudo: this.tournament.teams[0].pseudos[1], goals: 0 }],
+                        [{ pseudo: this.tournament.teams[2].pseudos[0], goals: 0 },
+                            { pseudo: this.tournament.teams[2].pseudos[1], goals: 0 }]]
                 };
                 let semifinal2: Match =
                 {
@@ -191,7 +197,10 @@ export class MatchComponent implements OnInit {
                     state: "NotStarted",
                     stage: "Semifinal",
                     elapsed: 0,
-                    teams: [toMatchTeam(this.tournament.teams[0]), toMatchTeam(this.tournament.teams[2])]
+                    teams: [[{ pseudo: this.tournament.teams[1].pseudos[0], goals: 0 },
+                    { pseudo: this.tournament.teams[1].pseudos[1], goals: 0 }],
+                    [{ pseudo: this.tournament.teams[3].pseudos[0], goals: 0 },
+                    { pseudo: this.tournament.teams[3].pseudos[1], goals: 0 }]]
                 };
                 this.tournament.matches.push(semifinal1);
                 this.tournament.matches.push(semifinal2);
@@ -206,21 +215,25 @@ export class MatchComponent implements OnInit {
         }
         else if (this.selectedMatch.stage === "Semifinal")
         {
-            let winners: MatchPlayer[][] = [
-                getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1)),
-                getWinnerTeam(getSemifinalMatch(this.tournament.matches, 2))]
-            let winner1 = getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1));
-            let final: Match =
-            {
-                token: Date.now() + "" + 0,
-                start: null,
-                order: 0,
-                state: "NotStarted",
-                stage: "Final",
-                elapsed: 0,
-                teams: [newMatchTeam(winners[0][0]), newMatchTeam(winners[0][1])]
-            };
-            this.tournament.matches.push(final);
+            if (this.tournament.matches.filter(m => m.stage == "Semifinal").filter(m => m.state == "Ended")[0]) {
+                if (this.tournament.matches.filter(m => m.stage == "Semifinal").filter(m => m.state == "Ended")[1]) {
+                    let winners: MatchPlayer[][] = [
+                        getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1)),
+                        getWinnerTeam(getSemifinalMatch(this.tournament.matches, 2))]
+                    let winner1 = getWinnerTeam(getSemifinalMatch(this.tournament.matches, 1));
+                    let final: Match =
+                    {
+                        token: Date.now() + "" + 0,
+                        start: null,
+                        order: 0,
+                        state: "NotStarted",
+                        stage: "Final",
+                        elapsed: 0,
+                        teams: [newMatchTeam(winners[0]), newMatchTeam(winners[1])]
+                    };
+                    this.tournament.matches.push(final);
+                }
+            }
         }
      }
 
