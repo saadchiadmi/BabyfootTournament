@@ -57,28 +57,28 @@ namespace babyfoot.Controllers
 
         // POST: api/Players
         [HttpPost]
-        public ActionResult<PlayerView> Create([FromBody] String pseudo)
+        public async Task<ActionResult<PlayerView>> PostPlayer(NewPlayerView view)
         {
-            if (pseudo == null)
+            if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)))
                 return BadRequest();
 
-            if (context.Players.Any(t => t.Pseudo.Equals(pseudo)))
-                return UnprocessableEntity();
-
-            Player player;
-
-            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using (var scope = new TransactionScope())
             {
-                var manager = new PlayerManager(context);
+                var player = new Player
+                {
+                    Pseudo = view.Pseudo,
+                    Score = view.Score,
+                    Goals = 0,
+                    Champions = 0
+                };
 
-                player = manager.Add(pseudo);
+                context.Add(player);
 
+                await context.SaveChangesAsync();
                 scope.Complete();
             }
 
-            var vplayer = view_maker.PlayerView(player);
-
-            var action = CreatedAtAction("PostPlayers", pseudo, vplayer);
+            var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
 
             return action;
         }
