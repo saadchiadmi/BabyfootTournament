@@ -5,8 +5,16 @@ using System.Threading.Tasks;
 
 namespace babyfoot.Models
 {
-    public class BadBabyfootBdState : Exception
+    public class BadBdStateException : Exception
     {
+        public BadBdStateException() : base()
+        {
 
+        }
+
+        public BadBdStateException(String message) : base(message)
+        {
+            
+        }
     }
 }

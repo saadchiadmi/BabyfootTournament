@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using babyfoot.Models;
 using babyfoot.Views;
 using System.Transactions;
+using babyfoot.Rules;
+using babyfoot.RequestManagers;
 
 namespace babyfoot.Controllers
 {
@@ -16,99 +18,98 @@ namespace babyfoot.Controllers
     public class PlayersController : ControllerBase
     {
         private readonly BabyfootDbContext context;
-        private readonly BabyfootWebInterface webInterface;
+        private readonly ViewMaker view_maker;
 
         public PlayersController(BabyfootDbContext context)
         {
             this.context = context;
-            this.webInterface = new BabyfootWebInterface(context);
+            this.view_maker = new ViewMaker(context);
         }
 
         // GET: api/Players
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlayerView>>> GetPlayers()
+        public async Task<ActionResult<List<PlayerView>>> GetAll()
         {
-            var players = await context.Players
-                .Select(t => webInterface.View(t))
+            var vplayers = await context.Players
+                .Select(t => view_maker.PlayerView(t))
                 .ToListAsync();
 
-            return players;
+            return vplayers;
         }
 
         // GET: api/Players/{pseudo}
         [HttpGet("{pseudo}")]
-        public async Task<ActionResult<PlayerView>> GetPlayer(String pseudo)
+        public async Task<ActionResult<PlayerView>> Get(String pseudo)
         {
+            if (pseudo == null)
+                return BadRequest();
+
             var player = await context.Players
                 .FirstOrDefaultAsync(t => t.Pseudo.Equals(pseudo));
 
             if (player == null)
                 return NotFound();
 
-            var info = webInterface.View(player);
+            var vplayer = view_maker.PlayerView(player);
 
-            return info;
+            return vplayer;
         }
 
         // POST: api/Players
         [HttpPost]
-        public async Task<ActionResult<PlayerView>> PostPlayer(NewPlayerView view)
+        public ActionResult<PlayerView> Create([FromBody] String pseudo)
         {
-            if (context.Players.Any(t => t.Pseudo.Equals(view.Pseudo)))
+            if (pseudo == null)
                 return BadRequest();
 
-            using (var scope = new TransactionScope())
+            if (context.Players.Any(t => t.Pseudo.Equals(pseudo)))
+                return UnprocessableEntity();
+
+            Player player;
+
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var player = new Player
-                {
-                    Pseudo = view.Pseudo,
-                    Score = view.Score,
-                    Goals = 0,
-                    Champions = 0
-                };
+                var manager = new PlayerManager(context);
 
-                context.Add(player);
+                player = manager.Add(pseudo);
 
-                await context.SaveChangesAsync();
                 scope.Complete();
             }
 
-            var action = CreatedAtAction("PostPlayer", new { pseudo = view.Pseudo }, view);
+            var vplayer = view_maker.PlayerView(player);
+
+            var action = CreatedAtAction("PostPlayers", pseudo, vplayer);
 
             return action;
         }
 
-        // POST: api/Players
-        [HttpPost("many")]
-        public async Task<ActionResult<PlayerView>> PostPlayers(List<NewPlayerView> view)
+        // POST: api/Players/Many
+        [HttpPost("List")]
+        public ActionResult<List<PlayerView>> CreateMany(List<String> pseudos)
         {
-            if (context.Players.Any(t => view.Select(t => t.Pseudo).Any(p => p.Equals(t.Pseudo))))
-                return BadRequest();
-            if (!(view.Select(t => t.Pseudo).Distinct().Count() == view.Count()))
+            if (pseudos == null)
                 return BadRequest();
 
+            if (context.Players.Any(t => pseudos.Any(p => p.Equals(t.Pseudo))))
+                return UnprocessableEntity();
 
-            using (var scope = new TransactionScope())
+            if (!(pseudos.Distinct().Count() == pseudos.Count()))
+                return UnprocessableEntity();
+
+            var players = new List<Player>();
+
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                foreach (NewPlayerView pview in view)
-                {
-                    var player = new Player
-                    {
-                        Pseudo = pview.Pseudo,
-                        Score = pview.Score,
-                        Goals = 0,
-                        Champions = 0
-                    };
+                var manager = new PlayerManager(context);
 
-                    context.Add(player);
-                }
-
-                await context.SaveChangesAsync();
+                players = manager.AddMany(pseudos);
 
                 scope.Complete();
             }
 
-            var action = CreatedAtAction("PostPlayers", null, view);
+            var vplayers = players.Select(t => view_maker.PlayerView(t));
+
+            var action = CreatedAtAction("PostPlayersList", pseudos, vplayers);
 
             return action;
         }

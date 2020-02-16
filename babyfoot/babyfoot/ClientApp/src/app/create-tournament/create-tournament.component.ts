@@ -81,25 +81,21 @@ export class CreateTournamentComponent implements OnInit {
         return [];
     }
 
-    generateOrderedMatches(teams: TournamentTeam[]): Match[]
-    {
-        let matches : Match[] = [];
-        let ordre : number[] = [];
-        let a = teams.length-1;
-        for (let i = teams.length - 2; i > 0; i--)
-        {
+
+    generateOrderedMatches(teams: TournamentTeam[]): Match[] {
+        let matches: Match[] = [];
+        let ordre: number[] = [];
+        let a = teams.length - 1;
+        for (let i = teams.length - 2; i > 0; i--) {
             a = a + i;
         }
-        for (let i = 0; i < a; i++)
-        {
+        for (let i = 0; i < a; i++) {
             ordre.push(i);
         }
         ordre = this.shuffleArray(ordre);
         a = 0;
-        for (let i = 0; i < teams.length - 1; i++)
-        {
-            for (let j = i + 1; j < teams.length; j++)
-            {
+        for (let i = 0; i < teams.length - 1; i++) {
+            for (let j = i + 1; j < teams.length; j++) {
                 let match: Match =
                 {
                     token: Date.now() + "" + ordre[a],
@@ -124,8 +120,7 @@ export class CreateTournamentComponent implements OnInit {
         return matches;
     }
 
-    shuffleArray(array : any[]): any[]
-    {
+    shuffleArray(array: any[]): any[] {
         for (var i = array.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
             var temp = array[i];

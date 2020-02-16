@@ -20,7 +20,5 @@ namespace babyfoot.Elo
         double Get(double ra, double rb);
 
         int GetScale();
-
-        void SetScale(int scale);
     }
 }
